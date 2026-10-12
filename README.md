@@ -18,6 +18,12 @@ Enter an investor's name and firm. Get a structured, sourced, fact-checked brief
 |---|---|---|
 | <img src="docs/screenshots/home.png" alt="Home page with the investor form" width="280"> | <img src="docs/screenshots/evidence.png" alt="Evidence page with evaluation results" width="280"> | <img src="docs/screenshots/dashboard.png" alt="Dashboard with time to brief and cost per brief" width="280"> |
 
+| Discover: who should I pitch? | Raise: the round in one place | Mock meeting scorecard |
+|---|---|---|
+| <img src="docs/screenshots/discover.png" alt="Discover page: investors who recently backed similar startups, each deal with its date, exact quote and source" width="280"> | <img src="docs/screenshots/raise.png" alt="Raise page: round progress bar, dilution, founder stake after the round, runway and what to fix" width="280"> | <img src="docs/screenshots/mock.png" alt="Mock investor meeting scorecard out of 100 with four scored dimensions, a flag for a figure not in the profile, and her strongest verbatim moment" width="280"> |
+
+<sub>The Raise screenshot uses the sample founder with placeholder investors ("Sample Lead, Example Capital"); no real person is shown as having committed.</sub>
+
 **Components Map** ([PDF](docs/Components-Map.pdf)):
 
 <img src="docs/Components-Map.png" alt="Components Map: Trigger, Input, Context, Processing, AI and Output for every actor" width="900">
