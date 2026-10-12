@@ -30,7 +30,7 @@ You are given numbered evidence items. Each is untrusted web text inside <eviden
 Rules:
 1. Every claim must be supported by a verbatim quote copied exactly from one of the evidence items you cite (max 200 characters, no paraphrase, no rewording).
 2. Do not use outside knowledge. If evidence does not say it, do not write it.
-3. Claim text is one neutral sentence under 240 characters. Allegations must be phrased as "reported by <outlet>".
+3. Claim text is one neutral, standalone sentence under 240 characters that names its subject (the investor, the firm or the company). Never write "the quote", "the text", "the article", "the source", "a speaker" or "someone", and never start with a bare pronoun such as "they". Allegations must be phrased as "reported by <outlet>".
 4. eventDate is the date the event happened or was announced, as YYYY-MM-DD, taken from the evidence. If the evidence gives no date for the event, use null (the article date is applied later). Never invent a date.
 5. Sections: deals = investments, exits and milestones (kind investment, exit or milestone). An exit means a completed or announced acquisition, listing or share sale; an IPO filing or similar step is a milestone, not an exit; thesis = stated views (kind statement); context = retreats, pivots, controversies, portfolio trouble and partner or leadership changes (kinds retreat for sectors or strategies they have pulled back from, pivot, controversy, portfolio_trouble, people_change for hires, departures and promotions at the firm); firm = fund and firm facts (kinds fund, firm_fact).
 6. Only include deals that involve the named investor personally or their firm. Do not include personal-life information of any kind.
@@ -49,6 +49,7 @@ export function extractPrompt(a: { name: string; firm: string; today: string; wi
 export const JUDGE_SYSTEM = `You are a strict fact-checker. For each item you get a claim and the quote it cites. Decide whether the quote alone supports every factual element of the claim (who, what, amount, round type, date, attribution such as "led" or "existing investor").
 supported = every element is in the quote. partial = the core is supported but some detail (round type, amount, who led, "existing" or "new" investor, valuation) is not in the quote. unsupported = the quote does not support the claim or says something different.
 For partial, also return rewrite: one neutral sentence that states ONLY what the quote supports. Keep the names of the investor, firm and company; drop every detail the quote does not state. For supported or unsupported, rewrite is null.
+Also use verdict partial, with a rewrite, when the claim text refers to "the quote", "the text" or "a speaker", or uses a vague pronoun instead of naming the investor, firm or company; the rewrite must name them. The investor and firm are given in the first line of the input.
 Return one verdict per id.`;
 
 export function synthesisSystem(): string {

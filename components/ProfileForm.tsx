@@ -55,8 +55,11 @@ export default function ProfileForm({ initial }: { initial: FounderProfile }) {
       </form>
       <div className="card p-5 mt-6">
         <h2 className="text-lg font-semibold">Your data</h2>
-        <p className="text-sm text-muted mt-1">This profile is sent to Gemini (paid tier, where content is not used to improve Google products) only to write your talking points. Investor facts never use it. You can erase everything at any time.</p>
-        <button onClick={wipe} className="btn mt-3 text-red">Delete all my data</button>
+        <p className="text-sm text-muted mt-1">This profile is sent to Gemini (paid tier, where content is not used to improve Google products) only to write your talking points. Investor facts never use it. You can download or erase everything at any time.</p>
+        <div className="mt-3 flex flex-wrap gap-3">
+          <a className="btn" href="/api/workspace/export" download>Download my data</a>
+          <button onClick={wipe} className="btn text-red">Delete all my data</button>
+        </div>
       </div>
     </div>
   );

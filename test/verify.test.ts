@@ -91,3 +91,14 @@ test('section confidence reflects source diversity and quality', () => {
   const low = sectionConfidence([{ ...claims[0], verified: true, evidenceIds: ['E3'] }], evid);
   assert.equal(low.deals, 'low');
 });
+
+import { isVague } from '../lib/verify';
+
+test('vague wording is detected; named subjects pass', () => {
+  assert.ok(isVague('A speaker stated that markets reward companies solving real problems.'));
+  assert.ok(isVague('The quote indicates that they back founders.'));
+  assert.ok(isVague('They back founders building durable consumer brands.'));
+  assert.equal(isVague('Vani Kola said Kalaari backs founders building durable consumer brands.'), false);
+  assert.equal(isVague('Forerunner led a $30 million Series A in Natural.'), false);
+  assert.equal(isVague('Kirsten Green warned that virality will not endure for some consumer AI startups.'), false);
+});

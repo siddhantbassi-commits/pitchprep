@@ -41,11 +41,12 @@ const CASES: Case[] = [
 
 // Independent re-audit of a finished brief, written separately from the gate so a bug in one is caught by the other.
 function audit(r: BriefResult) {
-  const out = { verified: 0, quoteMissing: 0, noSource: 0, dealOutOfWindow: 0, undatedDeal: 0, badTalkingRefs: 0 };
+  const out = { verified: 0, quoteMissing: 0, noSource: 0, dealOutOfWindow: 0, undatedDeal: 0, badTalkingRefs: 0, sloppyWording: 0 };
   const byId = new Map(r.evidence.map((e) => [e.id, e]));
   const today = r.windowEnd;
   for (const c of r.claims.filter((x) => x.verified)) {
     out.verified++;
+    if (/\b(a speaker|someone|the quote|the text|the article|the source states)\b/i.test(c.text) || /^(they|he|she|it)\b/i.test(c.text)) out.sloppyWording++;
     const ev = c.evidenceIds.map((id) => byId.get(id)).filter(Boolean);
     if (!ev.length || !ev.some((e) => e!.url.startsWith('http') || e!.origin === 'user')) out.noSource++;
     if (!ev.some((e) => quoteInText(c.quote, e!.text))) out.quoteMissing++;
@@ -98,6 +99,7 @@ Generated ${new Date().toISOString()} by \`npm run eval\` against live Google Se
 | Deals outside the 90-day window shown | ${sum('dealOutOfWindow')} | 0 |
 | Deals shown with no date | ${sum('undatedDeal')} | 0 |
 | Talking points citing a missing or unverified claim | ${sum('badTalkingRefs')} | 0 |
+| Shown claims with vague wording ("a speaker", "the quote", bare pronoun) | ${sum('sloppyWording')} | 0 |
 | Mean cost per brief (list price) | $${(real.reduce((n, r) => n + r.cost, 0) / Math.max(1, real.length)).toFixed(3)} | reported |
 | Mean grounded searches per brief | ${(real.reduce((n, r) => n + r.searches, 0) / Math.max(1, real.length)).toFixed(1)} | reported |
 

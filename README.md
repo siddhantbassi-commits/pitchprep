@@ -24,7 +24,7 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 40 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout) |
+| `npm test` | 44 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption) |
 | `npm run seed` | Generate the example briefs shown on the home page (live data) |
 | `npm run cal-test -- file.ics` | Test investor-meeting detection on a calendar file |
 | `npm run run -- "Name" "Firm"` | Run the whole pipeline in the terminal, no database needed |

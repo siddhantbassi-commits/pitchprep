@@ -94,3 +94,10 @@ export function overallConfidence(r: { status: string; sectionConfidence: Record
   const avg = SECTIONS.reduce((n, s) => n + order.indexOf(r.sectionConfidence[s]), 0) / SECTIONS.length;
   return order[Math.round(avg)];
 }
+
+const VAGUE = /\b(a speaker|someone|the quote|the quoted|the text|the article|the source states|the evidence)\b|^(they|he|she|it|this|these)\b/i;
+
+/** A claim must stand alone and name its subject. Vague references to "the quote" or a bare pronoun are not acceptable on screen. */
+export function isVague(text: string): boolean {
+  return VAGUE.test(text.trim());
+}

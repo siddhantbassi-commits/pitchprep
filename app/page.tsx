@@ -6,7 +6,8 @@ import { currentWorkspace, getProfile, listBriefs, listSeedBriefs } from '@/lib/
 
 export const dynamic = 'force-dynamic';
 
-export default async function Home() {
+export default async function Home({ searchParams }: { searchParams: Promise<{ name?: string; firm?: string; ctx?: string }> }) {
+  const q = await searchParams;
   const ws = await currentWorkspace().catch(() => null);
   const [mine, examples, profile] = await Promise.all([ws ? listBriefs(ws, 5).catch(() => []) : [], listSeedBriefs().catch(() => []), ws ? getProfile(ws).catch(() => DEMO_PROFILE) : DEMO_PROFILE]);
   const sample = profile.startup === DEMO_PROFILE.startup;
@@ -23,7 +24,7 @@ export default async function Home() {
             Briefs are tailored to a sample founder, <strong>{DEMO_PROFILE.founderName} of {DEMO_PROFILE.startup}</strong>, so you can try everything straight away. <Link className="underline font-medium" href="/settings">Use your own startup</Link> for briefs that are yours.
           </p>
         )}
-        <BriefForm />
+        <BriefForm defaultName={q.name?.slice(0, 80)} defaultFirm={q.firm?.slice(0, 80)} openContext={q.ctx === '1'} />
       </section>
 
       <section className="mt-12 grid gap-4 sm:grid-cols-3" aria-label="Why you can trust it">

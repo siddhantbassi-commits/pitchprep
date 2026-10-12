@@ -10,10 +10,10 @@ const EXAMPLES = [
   { name: 'Kunal Bahl', firm: 'Titan Capital' },
 ];
 
-export default function BriefForm() {
+export default function BriefForm({ defaultName = '', defaultFirm = '', openContext = false }: { defaultName?: string; defaultFirm?: string; openContext?: boolean }) {
   const router = useRouter();
-  const [name, setName] = useState('');
-  const [firm, setFirm] = useState('');
+  const [name, setName] = useState(defaultName);
+  const [firm, setFirm] = useState(defaultFirm);
   const [context, setContext] = useState('');
   const [meeting, setMeeting] = useState('');
   const [busy, setBusy] = useState(false);
@@ -59,15 +59,15 @@ export default function BriefForm() {
           <input id="firm" className="input mt-1" placeholder="e.g. Forerunner Ventures" value={firm} onChange={(e) => setFirm(e.target.value)} required minLength={2} maxLength={80} autoComplete="off" />
         </div>
       </div>
-      <details className="mt-4">
+      <details className="mt-4" open={openContext}>
         <summary className="cursor-pointer text-sm text-muted hover:text-ink">Add context (optional): meeting time, or paste a post or bio</summary>
         <div className="mt-3 grid gap-3">
           <div>
-            <label htmlFor="meeting" className="label">Meeting time</label>
+            <label htmlFor="meeting" className="label block">Meeting time</label>
             <input id="meeting" type="datetime-local" className="input mt-1 sm:max-w-xs" value={meeting} onChange={(e) => setMeeting(e.target.value)} />
           </div>
           <div>
-            <label htmlFor="ctx" className="label">Paste something they wrote</label>
+            <label htmlFor="ctx" className="label block">Paste something they wrote</label>
             <textarea id="ctx" className="input mt-1" rows={4} maxLength={6000} placeholder="A LinkedIn post, blog excerpt or bio. It is treated as a source you supplied and labelled as yours. We never scrape LinkedIn." value={context} onChange={(e) => setContext(e.target.value)} />
           </div>
         </div>

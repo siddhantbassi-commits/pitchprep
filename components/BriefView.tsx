@@ -121,7 +121,7 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
     if (data.isSeed) return copyToClipboard(location.href, 'Link copied');
     const r = await fetch(`/api/briefs/${data.id}`, { method: 'POST' });
     const j = await r.json();
-    if (r.ok) await copyToClipboard(`${location.origin}${j.path}`, 'Share link copied');
+    if (r.ok) await copyToClipboard(`${location.origin}${j.path}`, 'Share link copied. Anyone with it can read this brief, including the startup details in the talking points.');
   };
   const adopt = async () => {
     setAdopting(true);
@@ -150,10 +150,10 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
         </div>
         <div className="no-print flex flex-wrap gap-2">
           {result.synthesis && <button className="btn btn-primary" onClick={() => setCard(true)}>Meeting card</button>}
-          <button className="btn" onClick={copyText}>Copy text</button>
-          <button className="btn" onClick={() => window.print()}>Save as PDF</button>
-          <button className="btn" onClick={share}>{data.isSeed ? 'Copy link' : 'Share link'}</button>
-          <button className="btn" onClick={onRegenerate}>Refresh</button>
+          {result.status !== 'unverified' && <button className="btn" onClick={copyText}>Copy text</button>}
+          {result.status !== 'unverified' && <button className="btn" onClick={() => window.print()}>Save as PDF</button>}
+          {result.status !== 'unverified' && <button className="btn" onClick={share}>{data.isSeed ? 'Copy link' : 'Share link'}</button>}
+          <button className="btn" onClick={onRegenerate}>{result.status === 'unverified' ? 'Try again' : 'Refresh'}</button>
         </div>
       </header>
       {copied && <p role="status" className="no-print mt-2 text-sm text-brand font-medium">{copied}</p>}
@@ -167,7 +167,7 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           <button className="btn btn-primary" onClick={adopt} disabled={adopting}>{adopting ? 'Adding…' : 'Add to my pipeline'}</button>
         </div>
       )}
-      {sample && (
+      {sample && result.status !== 'unverified' && (
         <div className="no-print mt-4 rounded-xl border border-line bg-blue-soft p-4 text-sm text-blue flex flex-wrap items-center justify-between gap-3">
           <p>Talking points are tailored to a <strong>sample founder</strong> ({DEMO_PROFILE.startup}). Put in your own startup and every brief becomes yours.</p>
           <a className="btn" href="/settings">Use my startup</a>
@@ -175,9 +175,17 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
       )}
       {result.status === 'unverified' && (
         <div className="card mt-6 p-6">
-          <h2 className="text-xl font-semibold">We could not verify this brief</h2>
-          <ul className="mt-2 list-disc pl-5 text-muted space-y-1">{result.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
-          <p className="mt-3 text-sm">Nothing is shown rather than risk an unsupported statement. Check the spelling of the name and firm, or paste a link or bio under &quot;Add context&quot; and try again.</p>
+          <h2 className="text-xl font-semibold">We could not verify {result.investor.name} at {result.investor.firm}</h2>
+          <p className="mt-2 text-muted">{result.stats.claimsExtracted > 0 ? 'Sources were found, but none could be tied to this person at this firm, so nothing is shown rather than risk an unsupported statement.' : 'We found no public record of this person at this firm. Nothing is shown rather than risk an invented one.'}</p>
+          <ul className="mt-3 list-disc pl-5 space-y-1 text-sm">
+            <li>Check the spelling of the name, and use the firm's usual name (for example &ldquo;Peak XV Partners&rdquo;).</li>
+            <li>If they are newer or lower-profile, paste a link, bio or post under &ldquo;Add context&rdquo; and we will use it as a source you supplied.</li>
+            <li>Not everyone has a public footprint. For those people, the brief cannot be built from public sources, and that is the honest answer.</li>
+          </ul>
+          <div className="no-print mt-5 flex flex-wrap gap-3">
+            <a className="btn btn-primary" href={`/?name=${encodeURIComponent(result.investor.name)}&firm=${encodeURIComponent(result.investor.firm)}&ctx=1`}>Edit and add context</a>
+            <a className="btn" href="/">Try another investor</a>
+          </div>
         </div>
       )}
 
@@ -309,10 +317,10 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
       <section className="mt-10" aria-labelledby="ver">
         <h2 id="ver" className="text-2xl font-semibold">How this was verified</h2>
         <div className="card mt-3 p-5">
-          <p>
+          {result.stats.claimsExtracted === 0 ? <p>No claims could be extracted from public sources, so there was nothing to verify and nothing is shown.</p> : <p>
             {result.stats.claimsExtracted} candidate claims were extracted. <strong>{result.stats.claimsVerified} passed</strong> every check (an exact quote found in the source text, the source is about this investor, the date is inside the allowed window, and an independent fact-check agreed). {result.stats.claimsDropped} were left out.
-          </p>
-          {result.notes.length > 0 && <ul className="mt-3 list-disc pl-5 text-sm text-muted space-y-1">{result.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>}
+          </p>}
+          {result.status !== 'unverified' && result.notes.length > 0 && <ul className="mt-3 list-disc pl-5 text-sm text-muted space-y-1">{result.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>}
           {excluded.length > 0 && (
             <details className="mt-3">
               <summary className="cursor-pointer text-sm font-medium">What we left out and why ({excluded.length})</summary>

@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { Meter, grounded, structured, type GroundedResult } from './gemini';
 import { buildEvidence } from './sources';
-import { gate, sectionConfidence } from './verify';
+import { gate, isVague, sectionConfidence } from './verify';
 import { COLLECTORS, EXTRACT_SYSTEM, JUDGE_SYSTEM, collectorPrompt, extractPrompt, synthesisPrompt, synthesisSystem } from './prompts';
 import { addDays, isoDay } from './text';
 import { Extraction, SECTIONS, Synthesis, type BriefResult, type Claim, type FounderProfile, type Section, type StageState } from './types';
@@ -117,7 +117,7 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
       const j = await structured(
         Judgement,
         JUDGE_SYSTEM,
-        survivors.map((c) => `id=${c.id}\nclaim: ${c.text}\nquote: ${c.quote}`).join('\n\n'),
+        `Investor: ${name} at ${firm}\n\n` + survivors.map((c) => `id=${c.id}\nclaim: ${c.text}\nquote: ${c.quote}`).join('\n\n'),
         meter,
         Math.min(20_000, left() - 8_000),
       );
@@ -139,6 +139,8 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
       notes.push('The semantic fact-check did not complete; claims shown passed the quote, date and source checks only.');
     }
   }
+  // After the fact-checker has had its chance to rewrite, anything still vague ("a speaker", "the quote", a bare pronoun) is dropped.
+  claims = claims.map((c) => (c.verified && isVague(c.text) ? { ...c, verified: false, dropReason: 'vague_wording' } : c));
   if (g.olderDealsOmitted) notes.push(`${g.olderDealsOmitted} older deal${g.olderDealsOmitted > 1 ? 's' : ''} found outside the 90-day window and left out.`);
   const verified = claims.filter((c) => c.verified);
   await end('verify', 'done', `${verified.length} of ${claims.length} claims verified`);

@@ -9,7 +9,8 @@ export default function MeetingCard({ result, startup, onClose }: { result: Brie
   const closeRef = useRef<HTMLButtonElement>(null);
   useEffect(() => {
     closeRef.current?.focus();
-    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+    // The dialog's only control is Close, so Tab keeps focus there instead of wandering into the page behind.
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); else if (e.key === 'Tab') { e.preventDefault(); closeRef.current?.focus(); } };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow; document.body.style.overflow = 'hidden';
     return () => { document.removeEventListener('keydown', onKey); document.body.style.overflow = prev; };
