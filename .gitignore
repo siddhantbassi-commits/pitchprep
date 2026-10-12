@@ -10,3 +10,4 @@ next-env.d.ts
 out/
 .tmp
 .claude/launch.json
+.env*
