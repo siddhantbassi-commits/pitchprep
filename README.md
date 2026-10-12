@@ -10,6 +10,18 @@ Enter an investor's name and firm. Get a structured, sourced, fact-checked brief
 - **Scope and decisions:** [docs/SCOPE.md](docs/SCOPE.md) · **Automation brief:** [docs/automation-brief.md](docs/automation-brief.md) · **Nine checks and the Cut:** [docs/nine-checks.md](docs/nine-checks.md)
 - **Evidence:** [docs/eval-report.md](docs/eval-report.md) (live evaluation) · [docs/model-comparison.md](docs/model-comparison.md)
 
+## See it
+
+<p align="center"><img src="docs/screenshots/brief.png" alt="A finished brief: 20-second summary, fit with the founder's startup, and three talking points, each built on cited claims" width="760"></p>
+
+| Home | Evidence (live evaluation) | Dashboard |
+|---|---|---|
+| <img src="docs/screenshots/home.png" alt="Home page with the investor form" width="280"> | <img src="docs/screenshots/evidence.png" alt="Evidence page with evaluation results" width="280"> | <img src="docs/screenshots/dashboard.png" alt="Dashboard with time to brief and cost per brief" width="280"> |
+
+**Components Map** ([PDF](docs/Components-Map.pdf)):
+
+<img src="docs/Components-Map.png" alt="Components Map: Trigger, Input, Context, Processing, AI and Output for every actor" width="900">
+
 ## How it works
 Five parallel Gemini Flash searches (Google Search grounding) -> open and date every source -> extract claims with exact quotes (no tools) -> verify in code (quote in source, about this investor, dated inside 90 days, no duplicates) plus a fact-check pass -> write talking points from verified claims only. Code, not the model, decides what is shown. Details in [docs/SCOPE.md](docs/SCOPE.md).
 
