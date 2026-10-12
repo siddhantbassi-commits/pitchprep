@@ -18,14 +18,14 @@ Same prompt (the "new investments in the last 90 days" research call for Rajan A
 
 A single grounded Gemini Flash call can answer "give me a brief on this investor" and sounds convincing. Running the pipeline instead showed what that confidence hides. From the live evaluation (`docs/eval-report.md`), claims that the model produced and the checks removed or corrected:
 
-Counts are for the six real investors, first evaluation run (before the judge fix) then the final run (after it); live search varies between runs, so the numbers differ slightly:
+Counts are for the six real investors, from the first evaluation run (before the judge fix) and from the latest run (everything shipped); live search varies, so the numbers differ slightly between runs:
 
-- **Quotes that were not in the source** were produced and removed by the gate: 3, then 1. The model "quoted" text the page did not contain.
-- **Deals outside the 90-day window** were produced and removed: 5, then 8, e.g. a Chime IPO from June 2025 and a June 2026 round, presented next to current news.
-- **Sources that were not about the investor** were removed: 3, then 0.
-- **Deals with no date anywhere** were held back as "date unconfirmed" instead of being presented as recent: 3, then 5. One was a reported Oura stake sale by Forerunner, which may be real and current but could not be dated.
-- **Claims the fact-check found unsupported** were dropped: 3 in the final run.
-- **Mislabelled event type:** an IPO *filing* by a portfolio company was labelled an "exit". Fixed with a separate "milestone" category and an explicit rule.
+- **Quotes that were not in the source** were produced and removed by the gate: 3 in the first run, 1 in the second, 0 reaching the display in the latest (the independent re-audit finds none).
+- **Deals outside the 90-day window** were produced and removed: 5, then 8, then 7, e.g. a Chime IPO from June 2025 and a June 2026 round, presented next to current news.
+- **Sources that were not about the investor** were removed: 3, then 0, then 1.
+- **Deals with no date anywhere** were held back as "date unconfirmed" instead of being presented as recent: 3, then 5, then 6. One was a reported Oura stake sale by Forerunner, which may be real and current but could not be dated.
+- **Claims the fact-check found unsupported** were dropped: 3, then 2 in the later runs.
+- **Mislabelled event type:** an IPO *filing* by a portfolio company was labelled an "exit"; fixed with a separate "milestone" category. A partner promotion was labelled "pulling back"; fixed with a "team change" category.
 
 ### The independent spot-check, and the bug it found
 After the first evaluation I checked 12 sampled claims against the live pages myself. Six could be opened by an ordinary fetch: four were fully right (including dates), and **two carried invented detail even though their quote was real**:
