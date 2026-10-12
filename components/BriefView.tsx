@@ -177,7 +177,7 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
 
           <section className="mt-8" aria-labelledby="tp">
             <h2 id="tp" className="text-2xl font-semibold">Three talking points for {data.profile?.startup ?? 'your pitch'}</h2>
-            <div className="mt-4 grid gap-4">
+            <div className="mt-4 grid gap-4 print-block">
               {syn.talkingPoints.map((t, i) => (
                 <div key={i} className="card p-5 sm:p-6">
                   <div className="flex gap-4">
