@@ -1,5 +1,6 @@
 import RaiseCockpit from '@/components/RaiseCockpit';
 import ReadinessCard from '@/components/ReadinessCard';
+import DeckCheck from '@/components/DeckCheck';
 import PracticeProgress from '@/components/PracticeProgress';
 import { db } from '@/lib/db';
 import type { SessionLite } from '@/lib/progress';
@@ -19,6 +20,7 @@ export default async function Raise() {
       <p className="text-muted mb-6">Set the round, put each investor&apos;s amount against their stage, and see how full it is, what it costs you in ownership, and what to fix. Pure arithmetic on your own numbers; nothing here is a prediction.</p>
       <RaiseCockpit initialPlan={plan} initialCommitments={commitments} pipeline={pipeline.map((p) => ({ key: p.key, name: p.name, firm: p.firm, stage: p.status, fit: p.fit, briefId: p.briefId }))} startup={profile.startup} raiseNote={profile.raise} />
       <div className="mt-8"><ReadinessCard profile={profile} /></div>
+      <div className="mt-8"><DeckCheck /></div>
       <div className="mt-8">
         {sessions.length > 0 ? <PracticeProgress sessions={sessions} /> : (
           <section className="card p-5 sm:p-6"><h2 className="text-xl font-semibold">Your practice progress</h2><p className="mt-1 text-sm text-muted">Open any brief and start a mock meeting. Each round is scored and saved here, so you can see whether practice is working and which skill to work on next.</p></section>

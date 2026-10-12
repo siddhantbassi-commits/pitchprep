@@ -5,7 +5,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import WarmBadge from './WarmBadge';
 import { fmtDate } from '@/lib/format';
-import { describe, groupByDeal, type Candidate, type DealGroup, type Described, type DiscoveryResult } from '@/lib/discover';
+import type { Candidate, DiscoveryResult } from '@/lib/discover';
+import { describe, groupByDeal, type DealGroup, type Described } from '@/lib/discoverView';
 import type { StageState } from '@/lib/types';
 
 interface Row { id: string; status: 'running' | 'complete' | 'failed'; focus: string | null; stages: StageState[]; result: DiscoveryResult | null; error: string | null; created_at: string }

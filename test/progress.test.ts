@@ -62,3 +62,9 @@ test('certainty about the investor decision is refused, and duplicates and the c
   const v = verifyPreMortem({ reasons: [R({ reason: 'They will definitely pass on this.' }), R({ reason: 'A' }), R({ reason: 'a' }), R({ reason: 'B' }), R({ reason: 'C' }), R({ reason: 'D' })] } as never, claims, DEMO_PROFILE, []);
   assert.deepEqual(v.reasons.map((r) => r.reason), ['A', 'B', 'C']);
 });
+
+import { searchUnavailableMessage } from '../lib/gemini';
+test('a quota error says capacity renews daily; any other failure says try again in a minute', () => {
+  assert.match(searchUnavailableMessage([new Error('grounded: {"error":{"code":429,"status":"RESOURCE_EXHAUSTED"}}'), null]), /renews daily/);
+  assert.match(searchUnavailableMessage([new Error('fetch failed')]), /try again in a minute/);
+});

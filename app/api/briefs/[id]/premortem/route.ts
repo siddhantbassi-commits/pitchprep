@@ -26,7 +26,7 @@ export async function POST(_req: Request, ctx: { params: Promise<{ id: string }>
     const weakSkills = progress(sessions).weak.map((k) => k);
     const meter = new Meter();
     const out = await runPreMortem({ result: brief.result, profile: await getProfile(ws), weakSkills, meter });
-    if (brief.workspace_id === ws) await db().from('premortems').upsert({ workspace_id: ws, brief_id: id, result: out, created_at: out.createdAt });
+    await db().from('premortems').upsert({ workspace_id: ws, brief_id: id, result: out, created_at: out.createdAt });
     await logEvent('assist', 'premortem', id, { reasons: out.reasons.length, dropped: out.dropped, cost: meter.u.costUsd });
     return NextResponse.json({ premortem: out });
   } catch {

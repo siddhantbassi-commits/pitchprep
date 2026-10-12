@@ -128,3 +128,28 @@ export async function structured<S extends z.ZodType>(
     return schema.parse(JSON.parse(raw));
   }, 'structured');
 }
+
+/** Reads a PDF with Gemini's native document understanding and returns plain text. The file is sent inline and never stored. */
+export async function transcribePdf(bytes: Buffer, instruction: string, meter: Meter, timeoutMs = 70_000): Promise<string> {
+  return retrying(async () => {
+    const res = await withTimeout(
+      ai().models.generateContent({
+        model: MODEL(),
+        contents: [{ role: 'user', parts: [{ inlineData: { mimeType: 'application/pdf', data: bytes.toString('base64') } }, { text: instruction }] }],
+        config: { temperature: 0, thinkingConfig: { thinkingLevel: LOW } },
+      }),
+      timeoutMs,
+      'pdf transcription',
+    );
+    meter.add(res.usageMetadata);
+    return res.text ?? '';
+  }, 'transcribe');
+}
+
+/** What to tell a user when every search failed. A quota error is not "try again in a minute": it renews daily. */
+export function searchUnavailableMessage(reasons: unknown[]): string {
+  const quota = reasons.some((r) => /429|RESOURCE_EXHAUSTED|exceeded your current quota/i.test(String((r as Error)?.message ?? r)));
+  return quota
+    ? 'Live-search capacity for today has been used up, so new briefs and investor searches cannot run right now. The example briefs, your saved briefs and everything else still work. Capacity renews daily (around 1 PM India time); please try again then.'
+    : 'Live search is unavailable right now. Please try again in a minute.';
+}

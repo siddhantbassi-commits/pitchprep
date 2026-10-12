@@ -22,7 +22,11 @@ const RULES: Rule[] = [
 ];
 
 export function readiness(p: FounderProfile): { checks: Check[]; passed: number; total: number } {
-  const text = Object.values(p).join('\n');
+  return readinessFromText(Object.values(p).join('\n'));
+}
+
+/** The same eleven rules over any text, for example the transcript of a pitch deck. */
+export function readinessFromText(text: string): { checks: Check[]; passed: number; total: number } {
   const checks = RULES.map((r) => ({ id: r.id, label: r.label, pass: r.test.test(text), why: r.why, say: r.say }));
   return { checks, passed: checks.filter((c) => c.pass).length, total: checks.length };
 }

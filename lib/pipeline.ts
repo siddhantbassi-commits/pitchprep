@@ -1,7 +1,7 @@
 // The whole brief, end to end, with no database dependency. Persistence wraps this (lib/store.ts).
 
 import { z } from 'zod';
-import { Meter, grounded, structured, type GroundedResult } from './gemini';
+import { Meter, grounded, searchUnavailableMessage, structured, type GroundedResult } from './gemini';
 import { checkTalkingPoints } from './assist';
 import { buildEvidence } from './sources';
 import { gate, isVague, mentionsSubject, sectionConfidence } from './verify';
@@ -87,7 +87,7 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
   const queryCount = results.reduce((n, r) => n + r.g.queries.length, 0);
   if (!results.length) {
     await end('collect', 'failed', 'All searches failed');
-    throw new Error('Live search is unavailable right now. Please try again in a minute.');
+    throw new Error(searchUnavailableMessage(settled.map((r) => (r.status === 'rejected' ? r.reason : null))));
   }
   await end('collect', 'done', `${queryCount} searches run`);
 

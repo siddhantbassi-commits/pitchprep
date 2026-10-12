@@ -1,6 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { audit, collectorPrompts, describe, groupByDeal, rank, verifyDiscovery, type Candidate } from '../lib/discover';
+import { describe, groupByDeal } from '../lib/discoverView';
+import { audit, collectorPrompts, rank, verifyDiscovery, type Candidate } from '../lib/discover';
 import { DEMO_PROFILE } from '../lib/demoProfile';
 import type { Evidence } from '../lib/types';
 
@@ -96,7 +97,7 @@ const mkC = (firm: string, deals: Partial<Candidate['deals'][number]>[], partner
 
 test('labels differ by what the deals show, and the sentence names the deal, when and why', () => {
   const active = describe(mkC('A', [{ company: 'Anmasa', date: '2026-09-20' }, { company: 'Phab', date: '2026-08-01' }]), TODAY);
-  assert.equal(active.label, 'Active in your space'); assert.match(active.why, /2 deals in your category/); assert.match(active.why, /Anmasa/);
+  assert.equal(active.label, 'Active in your space'); assert.match(active.why, /2 deals in your category since Aug 2026/); assert.match(active.why, /Anmasa/);
   const closest = describe(mkC('B', [{ company: 'Anmasa (Hyperlocal staples)' }], 'Kanwaljit Singh'), TODAY);
   assert.equal(closest.label, 'Closest match'); assert.match(closest.why, /Backed Anmasa \(Seed\) 3 weeks ago: your category, your stage\./); assert.match(closest.next, /Kanwaljit Singh/);
   assert.equal(describe(mkC('C', [{ date: '2026-05-01' }]), TODAY).label, 'Right category');
