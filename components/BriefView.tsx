@@ -17,7 +17,7 @@ export interface BriefData {
   isSeed: boolean;
   profile: FounderProfile | null;
   meetingAt: string | null;
-  delta?: { prevId: string; prevAt: string; newClaims: { id: string; section: string; kind: string; date: string | null; text: string }[] } | null;
+  delta?: { prevId: string; prevAt: string; newSince: { id: string; section: string; kind: string; date: string | null; text: string }[]; alsoSurfaced: { id: string; section: string; kind: string; date: string | null; text: string }[] } | null;
 }
 
 export default function BriefView({ initial, token }: { initial: BriefData; token: string | null }) {
@@ -146,18 +146,31 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
       )}
 
       {data.delta && (
-        <section className="mt-6 card p-5 border-brand" aria-labelledby="delta">
-          <h2 id="delta" className="text-lg font-semibold">What changed since your last brief ({fmtDate(data.delta.prevAt)})</h2>
-          {data.delta.newClaims.length === 0 ? (
-            <p className="mt-1 text-sm text-muted">Nothing new has been found in public sources since then.</p>
+        <section className="mt-6 card p-5" aria-labelledby="delta">
+          <h2 id="delta" className="text-lg font-semibold">Compared with your last brief ({fmtDateTime(data.delta.prevAt)})</h2>
+          {data.delta.newSince.length === 0 ? (
+            <p className="mt-1 text-sm text-muted">No new events dated after your last brief were found in public sources.</p>
           ) : (
-            <ul className="mt-2 space-y-2 text-sm">
-              {data.delta.newClaims.map((c) => (
-                <li key={c.id} className="flex gap-2"><span className="chip shrink-0">{KIND_LABEL[c.kind] ?? c.kind}</span><a className="underline" href={`#${c.id}`}>{c.text}</a></li>
-              ))}
-            </ul>
+            <>
+              <p className="mt-1 text-sm font-medium">New since then</p>
+              <ul className="mt-1 space-y-2 text-sm">
+                {data.delta.newSince.map((c) => (
+                  <li key={c.id} className="flex gap-2"><span className="chip shrink-0">{KIND_LABEL[c.kind] ?? c.kind}</span><a className="underline" href={`#${c.id}`}>{c.text}</a></li>
+                ))}
+              </ul>
+            </>
           )}
-          <a className="mt-2 inline-block text-sm text-muted underline" href={`/brief/${data.delta.prevId}`}>Open the previous brief</a>
+          {data.delta.alsoSurfaced.length > 0 && (
+            <details className="mt-3">
+              <summary className="cursor-pointer text-sm text-muted">Also surfaced this time ({data.delta.alsoSurfaced.length}). Live search varies, so these may be older facts that did not show up before.</summary>
+              <ul className="mt-2 space-y-2 text-sm">
+                {data.delta.alsoSurfaced.map((c) => (
+                  <li key={c.id} className="flex gap-2"><span className="chip shrink-0">{KIND_LABEL[c.kind] ?? c.kind}</span><a className="underline" href={`#${c.id}`}>{c.text}</a></li>
+                ))}
+              </ul>
+            </details>
+          )}
+          <a className="mt-3 inline-block text-sm text-muted underline" href={`/brief/${data.delta.prevId}`}>Open the previous brief</a>
         </section>
       )}
 

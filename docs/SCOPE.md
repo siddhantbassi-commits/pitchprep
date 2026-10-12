@@ -37,7 +37,7 @@ Priya -> name + firm -> `POST /api/briefs` -> job row in Supabase -> background 
 - Citations, exact quotes and dates on every claim; per-section confidence computed from source count, tier and recency.
 - "What we left out and why", and an honest "nothing found" state instead of filler.
 - 6-hour cache for repeat investors; share link; copy as text; PDF export; refresh.
-- "What changed since your last brief" panel when you refresh a brief on the same investor.
+- "Compared with your last brief" panel when you refresh a brief on the same investor (events dated after it are "new since then"; other finds are labelled "also surfaced", because live search varies).
 - **Meetings:** connect a calendar link; investor meetings are detected, and briefs are prepared automatically about 24 hours before (GitHub Actions every 30 minutes) or on one click.
 - Per-claim "Wrong? / Outdated?" feedback.
 - Fit snapshot (stage, sector, cheque) calibrated to say "unknown" when the sources are silent.

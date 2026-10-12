@@ -13,11 +13,21 @@ test('delta lists only verified claims that are new', () => {
   const prev = { id: 'p', created_at: '2026-10-01T00:00:00Z', result: brief([claim('A', {}), claim('B', {})]) };
   const cur = brief([claim('A', {}), claim('B', {}), claim('C', {}), claim('D', { verified: false })]);
   const d = computeDelta(cur, prev);
-  assert.deepEqual(d.newClaims.map((c) => c.text), ['Deal C']);
+  assert.deepEqual([...d.newSince, ...d.alsoSurfaced].map((c) => c.text), ['Deal C']);
+  assert.equal(d.newSince.length, 0); // dated 1 Sep, before the previous brief, so only "also surfaced"
 });
 
 test('the same deal reworded by the model on a re-run is not reported as new', () => {
   const prev = { id: 'p', created_at: '2026-10-01T00:00:00Z', result: brief([claim('Acme', { text: 'Peak XV led Acme.' })]) };
   const cur = brief([claim('Acme2', { company: 'Acme', text: 'Acme was led by Peak XV.' })]);
-  assert.equal(computeDelta(cur, prev).newClaims.length, 0);
+  const d = computeDelta(cur, prev);
+  assert.equal(d.newSince.length + d.alsoSurfaced.length, 0);
+});
+
+test('an event dated after the previous brief counts as genuinely new', () => {
+  const prev = { id: 'p', created_at: '2026-10-01T00:00:00Z', result: brief([claim('A', {})]) };
+  const cur = brief([claim('A', {}), claim('Z', { eventDate: '2026-10-05' })]);
+  const d = computeDelta(cur, prev);
+  assert.deepEqual(d.newSince.map((c) => c.text), ['Deal Z']);
+  assert.equal(d.alsoSurfaced.length, 0);
 });
