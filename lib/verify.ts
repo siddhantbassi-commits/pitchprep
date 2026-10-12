@@ -86,3 +86,11 @@ export function sectionConfidence(claims: Claim[], evidence: Evidence[]): Record
   }
   return res;
 }
+
+/** One overall label for a brief, from its four section confidences. */
+export function overallConfidence(r: { status: string; sectionConfidence: Record<Section, Confidence> }): Confidence {
+  if (r.status === 'unverified') return 'none';
+  const order: Confidence[] = ['none', 'low', 'medium', 'high'];
+  const avg = SECTIONS.reduce((n, s) => n + order.indexOf(r.sectionConfidence[s]), 0) / SECTIONS.length;
+  return order[Math.round(avg)];
+}

@@ -5,6 +5,7 @@ import { cookies, headers } from 'next/headers';
 import { db, must } from './db';
 import { DEMO_PROFILE } from './demoProfile';
 import { WORKSPACE_COOKIE, verifyWorkspace } from './workspace';
+import { overallConfidence } from './verify';
 import type { BriefResult, FounderProfile, StageState } from './types';
 import type { ListRow } from '@/components/BriefList';
 import { FounderProfile as ProfileSchema } from './types';
@@ -96,9 +97,7 @@ export async function setStages(id: string, stages: StageState[]) {
 }
 
 export async function saveResult(id: string, r: BriefResult) {
-  const conf = (['deals', 'thesis', 'context', 'firm'] as const).map((s) => r.sectionConfidence[s]);
-  const order = { high: 3, medium: 2, low: 1, none: 0 } as const;
-  const overall = r.status === 'unverified' ? 'none' : (['none', 'low', 'medium', 'high'] as const)[Math.round(conf.reduce((n, c) => n + order[c], 0) / conf.length)];
+  const overall = overallConfidence(r);
   must(
     await db().from('briefs').update({
       status: r.status, result: r, latency_ms: r.stats.latencyMs, cost_usd: r.usage.costUsd,

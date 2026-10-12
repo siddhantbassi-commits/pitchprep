@@ -3,6 +3,7 @@ import { db, must } from '../lib/db';
 import { runPipeline } from '../lib/pipeline';
 import { DEMO_PROFILE } from '../lib/demoProfile';
 import { investorKey } from '../lib/store';
+import { overallConfidence } from '../lib/verify';
 
 const SEED_WS = '00000000-0000-4000-8000-000000000001';
 const INVESTORS = [
@@ -26,7 +27,7 @@ async function one([name, firm]: string[]) {
       workspace_id: SEED_WS, investor_name: name, firm, investor_key: investorKey(name, firm), status: r.status, result: r,
       profile_snapshot: DEMO_PROFILE, is_seed: true, latency_ms: r.stats.latencyMs, cost_usd: r.usage.costUsd, tokens_in: r.usage.promptTokens,
       tokens_out: r.usage.outputTokens + r.usage.thoughtTokens, grounded_queries: r.usage.groundedQueries, claims_verified: r.stats.claimsVerified,
-      claims_dropped: r.stats.claimsDropped, sources: r.stats.sources, confidence: 'medium', completed_at: new Date().toISOString(),
+      claims_dropped: r.stats.claimsDropped, sources: r.stats.sources, confidence: overallConfidence(r), completed_at: new Date().toISOString(),
     }).select('id').single(),
     'insert seed',
   )!.id as string;

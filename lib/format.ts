@@ -26,8 +26,9 @@ export function fmtDate(iso: string | null | undefined): string {
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 }
 
+// Always India time, so the server render and the browser render agree (no hydration mismatch) and the label is explicit.
 export function fmtDateTime(iso: string): string {
-  return new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  return `${new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`;
 }
 
 export function fmtSecs(ms: number | null | undefined): string {
