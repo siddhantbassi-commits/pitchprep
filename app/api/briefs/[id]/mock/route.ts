@@ -40,9 +40,10 @@ export async function POST(req: Request, ctx: { params: Promise<{ id: string }> 
       const question = await nextQuestion({ result: brief.result, profile, difficulty, turns, meter });
       return NextResponse.json({ question });
     }
-    if (founderTurns < 3 || turns[turns.length - 1].role !== 'founder') return NextResponse.json({ error: 'Answer at least three questions to get a scorecard.' }, { status: 400 });
-    const card = await scoreSession({ result: brief.result, profile, difficulty, turns, meter });
-    await db().from('mock_sessions').insert({ workspace_id: ws, brief_id: id, investor_name: brief.investor_name, firm: brief.firm, difficulty, turns, score: card, overall: card.overall });
+    const answeredOnly = turns.length && turns[turns.length - 1].role === 'investor' ? turns.slice(0, -1) : turns; // an unanswered last question is not scored
+    if (founderTurns < 3) return NextResponse.json({ error: 'Answer at least three questions to get a scorecard.' }, { status: 400 });
+    const card = await scoreSession({ result: brief.result, profile, difficulty, turns: answeredOnly, meter });
+    await db().from('mock_sessions').insert({ workspace_id: ws, brief_id: id, investor_name: brief.investor_name, firm: brief.firm, difficulty, turns: answeredOnly, score: card, overall: card.overall });
     await logEvent('assist', 'mock_scored', id, { overall: card.overall, cost: meter.u.costUsd });
     return NextResponse.json({ card });
   } catch {

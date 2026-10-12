@@ -16,6 +16,7 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
   const [answer, setAnswer] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
+  const [errAt, setErrAt] = useState<'ask' | 'score'>('ask');
   const [card, setCard] = useState<Scorecard | null>(null);
   const [past, setPast] = useState<Past[]>([]);
   const [speak, setSpeak] = useState(false);
@@ -55,7 +56,7 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
       const j = await call({ action: 'turn', turns: next });
       setTurns([...next, { role: 'investor', text: j.question }]);
       say(j.question);
-    } catch (e) { setErr((e as Error).message); setTurns(next); }
+    } catch (e) { setErr((e as Error).message); setErrAt('ask'); setTurns(next); }
     setBusy(false);
   }
   async function begin() { setTurns([]); setCard(null); setAnswer(''); await ask([]); }
@@ -66,8 +67,10 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
     if (next.filter((t) => t.role === 'founder').length >= TOTAL) await finish(next); else await ask(next);
   }
   async function finish(next = turns) {
-    setBusy(true); setErr('');
-    try { setCard((await call({ action: 'score', turns: next })).card); } catch (e) { setErr((e as Error).message); }
+    // An unanswered last question is not part of the score; drop it so the transcript ends with the founder's answer.
+    const answeredOnly = next.length && next[next.length - 1].role === 'investor' ? next.slice(0, -1) : next;
+    setBusy(true); setErr(''); setTurns(answeredOnly);
+    try { setCard((await call({ action: 'score', turns: answeredOnly })).card); } catch (e) { setErr((e as Error).message); setErrAt('score'); }
     setBusy(false);
   }
   function toggleMic() {
@@ -149,7 +152,7 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
         {err && (
           <div role="alert" className="mt-3 text-sm text-red">
             {err}{' '}
-            {started && !card && <button className="underline" onClick={() => (answered >= TOTAL ? finish() : waitingForAnswer ? undefined : ask(turns))}>{answered >= TOTAL ? 'Retry scoring' : waitingForAnswer ? '' : 'Retry'}</button>}
+            {started && !card && (errAt === 'score' ? <button className="underline" onClick={() => finish()}>Retry scoring</button> : !waitingForAnswer && <button className="underline" onClick={() => ask(turns)}>Retry</button>)}
           </div>
         )}
 
