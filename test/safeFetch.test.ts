@@ -30,3 +30,13 @@ test('source tiers', () => {
   assert.equal(tierOf('techcrunch.com', 'peakxv.com'), 2);
   assert.equal(tierOf('random-blog.xyz', 'peakxv.com'), 3);
 });
+
+import { ALLOWED_CAL, ALLOWED_HTML } from '../lib/safeFetch';
+
+test('calendar feeds (text/calendar, as Google serves them) are accepted for calendars but not for web pages', () => {
+  assert.ok(ALLOWED_CAL.test('text/calendar; charset=UTF-8'));
+  assert.ok(ALLOWED_CAL.test('application/ics'));
+  assert.equal(ALLOWED_HTML.test('text/calendar; charset=UTF-8'), false);
+  assert.equal(ALLOWED_CAL.test('application/json'), false);
+  assert.ok(ALLOWED_HTML.test('text/html; charset=utf-8'));
+});

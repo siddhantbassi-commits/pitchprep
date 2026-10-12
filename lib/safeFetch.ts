@@ -5,6 +5,9 @@ import net from 'node:net';
 
 const UA = 'PitchPrepBot/1.0 (+pre-meeting research; respects robots.txt)';
 const MAX_BYTES = 700_000;
+// Calendar feeds (Google, Outlook, Apple) are served as text/calendar; web pages as HTML or plain text.
+export const ALLOWED_HTML = /text\/html|application\/xhtml|text\/plain/i;
+export const ALLOWED_CAL = /text\/calendar|application\/ics|text\/plain|application\/octet-stream/i;
 
 export function isPrivateIp(ip: string): boolean {
   if (net.isIPv4(ip)) {
@@ -77,7 +80,7 @@ export interface Fetched {
 }
 
 /** Follows redirects manually so every hop is re-validated. Returns null on any failure; never throws. */
-export async function safeFetch(rawUrl: string, opts: { timeoutMs?: number; checkRobots?: boolean } = {}): Promise<Fetched | null> {
+export async function safeFetch(rawUrl: string, opts: { timeoutMs?: number; checkRobots?: boolean; calendar?: boolean } = {}): Promise<Fetched | null> {
   const timeoutMs = opts.timeoutMs ?? 7000;
   const deadline = Date.now() + timeoutMs;
   try {
@@ -89,7 +92,7 @@ export async function safeFetch(rawUrl: string, opts: { timeoutMs?: number; chec
       if (left <= 0) return null;
       const res = await fetch(u, {
         redirect: 'manual',
-        headers: { 'user-agent': UA, accept: 'text/html,application/xhtml+xml' },
+        headers: { 'user-agent': UA, accept: opts.calendar ? 'text/calendar,text/plain;q=0.8,*/*;q=0.5' : 'text/html,application/xhtml+xml' },
         signal: AbortSignal.timeout(left),
       });
       if (res.status >= 300 && res.status < 400) {
@@ -100,7 +103,7 @@ export async function safeFetch(rawUrl: string, opts: { timeoutMs?: number; chec
       }
       if (!res.ok) return { url: u.toString(), status: res.status, html: '' };
       const ct = res.headers.get('content-type') ?? '';
-      if (!/text\/html|application\/xhtml|text\/plain/i.test(ct)) return null;
+      if (!(opts.calendar ? ALLOWED_CAL : ALLOWED_HTML).test(ct)) return null;
       const reader = res.body?.getReader();
       if (!reader) return null;
       const chunks: Uint8Array[] = [];
