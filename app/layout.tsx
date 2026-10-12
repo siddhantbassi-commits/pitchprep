@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { Fraunces, Inter } from 'next/font/google';
 import Link from 'next/link';
 import './globals.css';
+import CommandPalette from '@/components/CommandPalette';
+import SearchButton from '@/components/SearchButton';
 
 const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces', display: 'swap' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
@@ -35,13 +37,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span aria-hidden className="inline-block h-6 w-6 rounded-md bg-brand text-brand-ink text-sm grid place-items-center font-sans font-bold">P</span>
               PitchPrep
             </Link>
-            <nav aria-label="Main" className="flex w-full items-center gap-1 overflow-x-auto text-sm lg:w-auto">
+            <div className="flex w-full items-center gap-2 lg:w-auto"><nav aria-label="Main" className="flex w-full items-center gap-1 overflow-x-auto text-sm lg:w-auto">
               {nav.map((n) => (
                 <Link key={n.href} href={n.href} className="px-2.5 py-1.5 rounded-lg text-muted hover:text-ink hover:bg-brand-soft whitespace-nowrap">{n.label}</Link>
               ))}
             </nav>
+            <SearchButton /></div>
           </div>
         </header>
+        <CommandPalette />
         <main id="main" className="flex-1 mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
         <footer className="no-print border-t border-line text-xs text-muted">
           <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row gap-2 justify-between">

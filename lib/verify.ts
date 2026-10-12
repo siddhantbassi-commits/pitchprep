@@ -104,3 +104,28 @@ const VAGUE = /\b(a speaker|someone|the quote|the quoted|the text|the article|th
 export function isVague(text: string): boolean {
   return VAGUE.test(text.trim());
 }
+
+export interface DoubleCheck { claim: Claim; reasons: string[]; score: number }
+
+/**
+ * The verified claims that deserve a second look before the founder says them aloud: only partly confirmed, from a weaker or
+ * excerpt-only source, dated from the article rather than the event, or a serious reported problem. Deterministic, no model.
+ */
+export function needsDoubleCheck(claims: Claim[], evidence: Evidence[], limit = 3): DoubleCheck[] {
+  const byId = new Map(evidence.map((e) => [e.id, e]));
+  const out: DoubleCheck[] = [];
+  for (const c of claims) {
+    if (!c.verified) continue;
+    const ev = c.evidenceIds.map((id) => byId.get(id)).filter((e): e is Evidence => !!e);
+    const reasons: string[] = [];
+    let score = 0;
+    if (c.judge === 'partial') { score += 2; reasons.push('The source supports the core fact but not every detail'); }
+    if (ev.length && ev.every((e) => e.tier === 3)) { score += 2; reasons.push('Only a lesser-known source reports it'); }
+    if (ev.length && ev.every((e) => !e.fullFetch)) { score += 1; reasons.push("We could only read Google's excerpt, not the full page"); }
+    if (c.section === 'deals' && c.dateSource === 'article') { score += 1; reasons.push('The date is the article date, not the stated event date'); }
+    if (c.severity === 'high') { score += 2; reasons.push('A serious reported matter: confirm before raising it'); }
+    if (c.kind === 'controversy' || c.kind === 'portfolio_trouble') { score += 1; reasons.push('Reported by the outlet named, not independently confirmed'); }
+    if (score >= 2) out.push({ claim: c, reasons, score });
+  }
+  return out.sort((a, b) => b.score - a.score).slice(0, limit);
+}

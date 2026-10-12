@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import type { BriefResult, Claim } from '@/lib/types';
 import { KIND_LABEL } from '@/lib/format';
+import ListenButton from './ListenButton';
 
 /** Full-screen, large-type view for the minute before the meeting: openers, key facts, watch-outs, likely questions. */
 export default function MeetingCard({ result, startup, onClose }: { result: BriefResult; startup: string; onClose: () => void }) {
@@ -29,7 +30,7 @@ export default function MeetingCard({ result, startup, onClose }: { result: Brie
             <h2 className="mt-1 text-3xl font-semibold leading-tight">{result.investor.name}</h2>
             <p className="text-lg text-muted">{[result.investor.role, result.investor.firm].filter(Boolean).join(' · ')}</p>
           </div>
-          <button ref={closeRef} className="btn shrink-0" onClick={onClose}>Close</button>
+          <div className="flex shrink-0 gap-2"><ListenButton result={result} /><button ref={closeRef} className="btn" onClick={onClose}>Close</button></div>
         </div>
 
         {s && (

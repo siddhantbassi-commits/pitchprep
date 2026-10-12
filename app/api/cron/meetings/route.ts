@@ -1,6 +1,7 @@
 import { after, NextResponse } from 'next/server';
 import { db, logEvent } from '@/lib/db';
 import { prepareMeeting, syncCalendar, type MeetingRow } from '@/lib/calendar';
+import { runNudges } from '@/lib/nudges';
 
 export const dynamic = 'force-dynamic';
 export const maxDuration = 300;
@@ -25,7 +26,10 @@ export async function GET(req: Request) {
       prepared++;
     }
   }
+  // Then send whatever email nudges are due (brief ready, refreshed brief before a meeting, follow-up and overdue reminders).
+  const n = await runNudges(new Date(), new URL(req.url).origin).catch(() => null);
+  if (n) jobs.push(...n.jobs);
   if (jobs.length) after(() => Promise.all(jobs.map((j) => j())).then(() => undefined));
-  await logEvent('cron', 'meetings', null, { feeds: feeds.length, prepared });
-  return NextResponse.json({ feeds: feeds.length, prepared });
+  await logEvent('cron', 'meetings', null, { feeds: feeds.length, prepared, nudges: n ? { sent: n.sent, refreshed: n.refreshed, failed: n.failed, configured: n.configured } : 'error' });
+  return NextResponse.json({ feeds: feeds.length, prepared, nudges: n ? { configured: n.configured, workspaces: n.workspaces, sent: n.sent, refreshed: n.refreshed, failed: n.failed } : null });
 }

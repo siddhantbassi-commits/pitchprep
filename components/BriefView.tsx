@@ -6,6 +6,10 @@ import type { BriefResult, Claim, Confidence, Evidence, FounderProfile, Section,
 import AfterMeeting from './AfterMeeting';
 import MeetingCard from './MeetingCard';
 import Rehearse from './Rehearse';
+import VerifyList from './VerifyList';
+import FreshnessChip from './FreshnessChip';
+import ListenButton from './ListenButton';
+import Outreach from './Outreach';
 import { DEMO_PROFILE } from '@/lib/demoProfile';
 import { CONF_LABEL, DROP_LABEL, KIND_LABEL, claimDate, fmtDate, fmtDateTime, fmtSecs } from '@/lib/format';
 
@@ -147,9 +151,11 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           <p className="mt-2 text-sm text-muted">
             Generated {fmtDateTime(result.asOf)} in {fmtSecs(result.stats.latencyMs)} · {result.stats.sources} sources, {result.stats.fullTextSources} read in full · deals window {fmtDate(result.windowStart)} to {fmtDate(result.windowEnd)}
           </p>
+          {result.status !== 'unverified' && <FreshnessChip asOf={result.asOf} meetingAt={data.meetingAt} onRefresh={onRegenerate} />}
         </div>
         <div className="no-print flex flex-wrap gap-2">
           {result.synthesis && <button className="btn btn-primary" onClick={() => setCard(true)}>Meeting card</button>}
+          {result.synthesis && <ListenButton result={result} />}
           {result.status !== 'unverified' && <button className="btn" onClick={copyText}>Copy text</button>}
           {result.status !== 'unverified' && <button className="btn" onClick={() => window.print()}>Save as PDF</button>}
           {result.status !== 'unverified' && <button className="btn" onClick={share}>{data.isSeed ? 'Copy link' : 'Share link'}</button>}
@@ -261,6 +267,8 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
         </>
       )}
 
+      {result.status !== 'unverified' && syn && <VerifyList claims={result.claims} evidence={result.evidence} />}
+
       {result.status !== 'unverified' && (
         <>
           <Section id="deals" title="Recent portfolio activity" sub={`Investments, exits and milestones from ${fmtDate(result.windowStart)} to ${fmtDate(result.windowEnd)} (last 90 days)`} conf={result.sectionConfidence.deals} count={bySection('deals').length} empty="No investments or exits dated in the last 90 days were found in public sources. That does not prove there were none, only that none could be sourced.">
@@ -311,6 +319,8 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           </div>
         </section>
       )}
+
+      {data.isOwner && (result.status === 'complete' || result.status === 'partial') && <Outreach briefId={data.id} investor={data.investor.name} />}
 
       {data.isOwner && (result.status === 'complete' || result.status === 'partial') && <AfterMeeting briefId={data.id} name={data.investor.name} firm={data.investor.firm} />}
 

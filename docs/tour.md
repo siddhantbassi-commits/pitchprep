@@ -11,8 +11,9 @@ Live app: https://pitchprep-three.vercel.app. No login. Everything below is real
 | 5 | On an example brief click **Add to my pipeline**, then use **After the meeting**: set a status, write notes, **Draft email** | Autosaved notes; an email drafted only from the notes and verified facts, with placeholders flagged. Nothing is sent |
 | 6 | Open **Pipeline** | Every investor, ranked by fit, with status, next step and overdue flags; search, filters, notes |
 | 7 | Open **Meetings** and click **Try with a sample calendar** | Five fictional meetings: two or three investors are detected, the customer and job candidate are not. **Prepare brief** creates a brief for that meeting |
+| 7b | Under the calendar, open **Email nudges**, enter an address and click **Preview** beside any email type | Exactly what each email looks like, built from your latest brief, without sending anything. Confirm your address to receive real ones (confirm-first, unsubscribe in every email) |
 | 8 | Type a made-up investor (for example *Zorblax Venmoor, Quantum Hearth Capital*) | The system refuses to invent a brief: "We could not verify this brief" |
 | 9 | Open **Dashboard** and **Evidence** (footer) | Live latency, cost per brief, what the gate dropped; the stored evaluation results and the independent spot-check |
 | 10 | Open **My startup** | Edit the founder profile (it feeds every talking point); **Delete all my data** really deletes |
 
-Also try: press `/` on Home to start typing, switch your device to dark mode, print or **Save as PDF** a brief, and resize to a phone width.
+Also try: **Listen** on a brief to hear it read aloud, the **Double-check before you say these** list near the top of a brief, **Find patterns in my notes** on the Pipeline page, **Draft an intro message** under a brief, press `⌘K` / `Ctrl+K` to jump anywhere, press `/` on Home to start typing, switch your device to dark mode, print or **Save as PDF** a brief, and resize to a phone width.

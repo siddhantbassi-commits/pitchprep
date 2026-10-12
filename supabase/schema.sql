@@ -168,6 +168,37 @@ create table if not exists investor_notes (
 
 alter table investor_notes enable row level security;
 
+
+-- Email nudges: a confirmed address and what the founder wants to hear about, plus a ledger so nothing is sent twice.
+create table if not exists nudge_prefs (
+  workspace_id uuid primary key references workspaces(id) on delete cascade,
+  email text not null,
+  verified_at timestamptz,
+  verify_sent_at timestamptz,
+  enabled boolean not null default true,
+  brief_ready boolean not null default true,
+  pre_meeting boolean not null default true,
+  follow_up boolean not null default true,
+  overdue boolean not null default true,
+  daily_digest boolean not null default true,
+  lead_minutes int not null default 120 check (lead_minutes between 30 and 360),
+  created_at timestamptz not null default now()
+);
+
+create table if not exists nudges_sent (
+  id bigserial primary key,
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  kind text not null,
+  ref text not null,
+  sent_at timestamptz not null default now(),
+  ok boolean not null default true,
+  error text,
+  unique (workspace_id, kind, ref)
+);
+
+alter table nudge_prefs enable row level security;
+alter table nudges_sent enable row level security;
+
 alter table workspaces enable row level security;
 alter table founder_profiles enable row level security;
 alter table briefs enable row level security;
@@ -179,6 +210,6 @@ alter table rate_limits enable row level security;
 
 -- Explicit grants, scoped to PitchPrep's own tables only (this project is shared with other apps; their grants are not touched).
 grant usage on schema public to service_role;
-grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings, investor_notes to service_role;
-grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq to service_role;
+grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings, investor_notes, nudge_prefs, nudges_sent to service_role;
+grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq, nudges_sent_id_seq to service_role;
 grant execute on function bump_rate(text, timestamptz) to service_role;

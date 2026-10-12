@@ -110,3 +110,15 @@ test('a stated view that does not name the investor or firm is dropped (an unnam
   assert.equal(r[0].dropReason, 'unattributed_statement');
   assert.equal(r[1].verified, true);
 });
+
+import { needsDoubleCheck } from '../lib/verify';
+
+test('double-check list surfaces weak, partial and serious claims, and ignores solid ones', () => {
+  const solid = ev('E1', 'Rajan Anandan said Peak XV Partners led the $45 million Series B in Acme this week.', { tier: 1 });
+  const weak = ev('E2', 'Peak XV news from a blog.', { tier: 3, fullFetch: false });
+  const mk = (id: string, o: Record<string, unknown>) => ({ ...claim({}), id, verified: true, dropReason: null, dateSource: 'claim', judge: 'supported', ...o }) as never;
+  const r = needsDoubleCheck([mk('C1', { evidenceIds: ['E1'] }), mk('C2', { evidenceIds: ['E2'], judge: 'partial' }), mk('C3', { evidenceIds: ['E1'], severity: 'high', kind: 'controversy', section: 'context' })], [solid, weak]);
+  assert.deepEqual(r.map((x) => x.claim.id), ['C2', 'C3'].sort((a, b) => (r.find((x) => x.claim.id === b)!.score - r.find((x) => x.claim.id === a)!.score)));
+  assert.ok(r.every((x) => x.claim.id !== 'C1'));
+  assert.ok(r[0].reasons.length >= 1);
+});

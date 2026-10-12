@@ -31,9 +31,10 @@ Priya -> name + firm -> `POST /api/briefs` -> job row in Supabase -> background 
 | Hosting | Vercel (Mumbai `bom1`, Hobby plan, 300 s function limit with Fluid compute) and Supabase (Mumbai) | Same stack as the earlier cases. Background work runs with `after()` and the page polls progress. Verified on the deployed site: a brief finishes in about 50 s. |
 | Database | New tables in an existing Supabase project, not a new project | The access token could not create a project (HTTP 403). The existing project's tables are untouched; PitchPrep's table grants are scoped to its own eight tables. |
 | Rehearsal numbers | Checked in code against her profile | A language model cannot be trusted to notice that 40% contradicts the 34% on record; a set comparison can. |
+| Email sender | A dedicated Gmail account with an app password (SMTP) | No domain to buy; delivers to any address. Cost of that choice: a Gmail "From" address and consumer sending limits, so the system confirms addresses first, caps sends per person and per day, and logs every send. |
 | Calendar | Secret iCal link, no OAuth | Google OAuth for calendar scopes needs app verification. A read-only secret link needs nothing from the user's Google account and works with any calendar. Only titles, times, attendee names and email domains reach Gemini. |
 | Follow-up emails | Drafted, never sent | The system has no code path that emails anyone. The draft opens in her own email app, which keeps the decision and the sender identity with her (Check 07). |
-| Handoff channel | Web (history, share link, PDF) now; Telegram nudge is roadmap | Same reasoning as Case 3: a phone message minutes before the meeting is the right channel, but it needs a bot token, so it is left out rather than faked. |
+| Handoff channel | Email nudges plus the web app; Telegram is roadmap | Email reaches her anywhere and the one-tap link opens the brief on her phone; Telegram would be a second channel. |
 
 ## Beyond the brief (built)
 Priya will take 40 or more meetings over a raise, so the brief is the start of the workflow, not the whole of it.
@@ -54,6 +55,21 @@ Priya will take 40 or more meetings over a raise, so the brief is the start of t
 - **Follow-up email draft**: written only from her notes, her profile and the verified facts; commitments stay exactly as she made them; placeholders such as [attach deck] are flagged; code flags any figure not found in her profile or notes. She edits and sends it herself.
 - **Rehearsal**: type or dictate an answer to a likely question and get coaching; **code** checks every figure she quotes against her own profile, so "40%" when the record says 34% is caught before an investor hears it.
 
+**Nudges (email, from a dedicated Gmail account)**
+- Confirm-first: a new address gets one confirmation email and nothing else until its link is clicked; every email carries an unsubscribe link and the one-click `List-Unsubscribe` header.
+- **Brief ready**, **refreshed brief before the meeting** (a stale brief is re-researched about three hours out, and the email says what is new since the one she last saw, or plainly that nothing is), **follow-up reminder** the morning after, **overdue next steps** (one a morning), **today's meetings** (one a morning).
+- Idempotent: a ledger (`nudges_sent`) guarantees nothing is sent twice; the scheduling rules are a pure function with 10 unit tests; daily caps per person and per site protect the sending account.
+- **One-tap sign-in links** in emails (signed, 7-day, same-site redirect only) double as cross-device continuity: "Email me a link to open on my phone".
+- Preview every email in-app without sending; a test-email button; dry-run when no sender is configured.
+
+**Smarter**
+- **Double-check before you say these**: the claims that passed our checks but are the least certain (partly confirmed, lesser source, excerpt only, article-dated, serious reported matters), chosen by code with a plain reason each.
+- **Data freshness**: how old the research is, with a nudge to refresh when a meeting is near.
+- **Listen mode**: the brief read aloud with the browser's built-in voice (nothing leaves the device).
+- **Patterns across your notes**: what two or more investors keep raising with her, every theme backed by a quote that code confirms is really in her notes.
+- **Intro-message drafts** for investors she has not met (email or LinkedIn note), from verified facts only, one accurate hook and one small ask; figures and placeholders checked.
+- **Command palette** (⌘K / Ctrl+K) to jump to any page or investor.
+
 **Trust and operations**
 - Per-claim "Wrong? / Outdated?" feedback; ops dashboard (time to brief, share under two minutes, cost per brief, verification rate, what the gate dropped); in-product **Evidence** page with the live evaluation results.
 - Evaluation harness (`npm run eval`): real, fake, mismatched and adversarial inputs; independent spot-check ([spot-check.md](spot-check.md)).
@@ -61,7 +77,7 @@ Priya will take 40 or more meetings over a raise, so the brief is the start of t
 - Accessible by design: skip link, labelled controls, keyboard shortcut (`/` to start typing), dark mode, reduced-motion support, print stylesheet for PDF.
 
 ## Not built, documented as roadmap
-Telegram or email nudge before the meeting (needs a bot token or a verified sending domain), recurring-event expansion in the calendar reader, email sign-in across devices, CRM sync (Affinity, Attio, HubSpot), warm-intro paths, multi-partner panel meetings, post-meeting follow-up drafts, WhatsApp delivery.
+Telegram as a second nudge channel, recurring-event expansion in the calendar reader, email sign-in across devices, CRM sync (Affinity, Attio, HubSpot), warm-intro paths, multi-partner panel meetings, post-meeting follow-up drafts, WhatsApp delivery.
 
 ## Gemini facts used (ai.google.dev, checked 12 Oct 2026)
 - `gemini-3.8-flash`: newest stable Flash. Paid-tier list price $0.75 / $3.75 per million input / output tokens through 31 Dec 2026.

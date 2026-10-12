@@ -36,7 +36,7 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 44 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption) |
+| `npm test` | 69 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption, nudge scheduling, signed links, email templates) |
 | `npm run seed` | Generate the example briefs shown on the home page (live data; a thin run is retried up to twice, unlike the evaluation, which is never filtered) |
 | `npm run cal-test -- file.ics` | Test investor-meeting detection on a calendar file |
 | `npm run run -- "Name" "Firm"` | Run the whole pipeline in the terminal, no database needed |
@@ -50,6 +50,7 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 Not just a brief: the whole fundraising workflow around it.
 - **Before:** founder profile, cited and quoted claims, fit snapshot, questions to ask *them*, phone-friendly **meeting card**, **calendar link** that finds investor meetings and prepares briefs automatically (try it with a sample calendar), compared-with-last-time panel.
 - **After:** investor **pipeline** ranked by fit with status, next step and notes; **follow-up email draft** from her notes; **answer rehearsal** where code checks every figure against her profile.
+- **Nudges:** confirm-first **email nudges** (brief ready, a refreshed brief with what is new before the meeting, follow-up and overdue reminders) with one-tap links that sign you in on your phone; **double-check list**, **listen mode**, **patterns across your notes**, **intro-message drafts**, **⌘K palette**.
 - **Trust:** per-claim feedback, ops dashboard with cost per brief, in-product [Evidence page](https://pitchprep-three.vercel.app/evidence), real data deletion, injection / SSRF / rate-limit protections, accessibility, dark mode, installable on a phone.
 
 New here? Follow the [three-minute tour](docs/tour.md).

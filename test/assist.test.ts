@@ -69,3 +69,48 @@ test('fidelity rewrites replace only unfaithful points with non-empty text', () 
   assert.equal(r.points[1].opener, 'fixed B');
   assert.equal(r.points[2].opener, 'opener C');
 });
+
+import { briefToSpeech } from '../lib/speech';
+import type { BriefResult } from '../lib/types';
+
+test('the spoken script covers who, openers, watch-outs and questions, with no stray markup', () => {
+  const r = {
+    investor: { name: 'Kirsten Green', firm: 'Forerunner Ventures', role: 'Founding Partner' },
+    claims: [{ verified: true, section: 'context', severity: 'watch', text: 'Brian O\'Malley moved to board partner.' }],
+    synthesis: { skim: ['Fund VII closed $500M.'], talkingPoints: [{ title: 'Retention', opener: 'We built around organic retention.' }], likelyQuestions: [{ question: 'How is margin trending?' }], questionsToAsk: [{ question: 'How do you use follow-on reserves?' }] },
+  } as unknown as BriefResult;
+  const lines = briefToSpeech(r);
+  assert.match(lines[0], /Kirsten Green, Founding Partner, Forerunner Ventures/);
+  for (const needle of ['Fund VII', 'organic retention', 'board partner', 'follow-on reserves', 'margin trending']) assert.ok(lines.some((l) => l.includes(needle)), needle);
+  assert.ok(lines.every((l) => !/[<>{}]|undefined/.test(l)));
+});
+
+import { verifyThemes } from '../lib/patterns';
+
+test('a recurring theme survives only if its snippets truly appear in at least two investors notes', () => {
+  const notes = [
+    { name: 'Kirsten Green', firm: 'Forerunner', notes: 'She worried about the quick-commerce margin squeeze and asked about repeat rate.' },
+    { name: 'Rajan Anandan', firm: 'Peak XV', notes: 'Pushed hard on quick-commerce margin squeeze. Liked the community.' },
+    { name: 'Garry Tan', firm: 'YC', notes: 'Asked about hiring plans only.' },
+  ];
+  const themes = verifyThemes([
+    { theme: 'Quick-commerce margins', prepare: 'Show channel mix', evidence: [{ investor: 'Kirsten Green', snippet: 'quick-commerce margin squeeze' }, { investor: 'Rajan Anandan', snippet: 'quick-commerce margin squeeze' }] },
+    { theme: 'Invented concern', prepare: 'x', evidence: [{ investor: 'Garry Tan', snippet: 'worried about burn rate and runway' }, { investor: 'Kirsten Green', snippet: 'worried about burn rate and runway' }] },
+    { theme: 'Only one investor', prepare: 'x', evidence: [{ investor: 'Garry Tan', snippet: 'Asked about hiring plans only' }] },
+  ], notes);
+  assert.equal(themes.length, 1);
+  assert.equal(themes[0].theme, 'Quick-commerce margins');
+  assert.deepEqual(themes[0].investors.sort(), ['Kirsten Green', 'Rajan Anandan']);
+});
+
+test('theme verification accepts "Name (Firm)" labels echoed by the model and still rejects invented quotes', () => {
+  const notes = [
+    { name: 'Kirsten Green', firm: 'Forerunner', notes: 'She worried about the quick-commerce margin squeeze.' },
+    { name: 'Rajan Anandan', firm: 'Peak XV', notes: 'Pushed hard on the quick-commerce margin squeeze.' },
+  ];
+  const t = verifyThemes([{ theme: 'Margins', prepare: 'x', evidence: [{ investor: 'Kirsten Green (Forerunner)', snippet: 'quick-commerce margin squeeze' }, { investor: 'Rajan Anandan (Peak XV)', snippet: 'quick-commerce margin squeeze' }] }], notes);
+  assert.equal(t.length, 1);
+  assert.deepEqual(t[0].investors.sort(), ['Kirsten Green', 'Rajan Anandan']);
+  const bad = verifyThemes([{ theme: 'Made up', prepare: 'x', evidence: [{ investor: 'Kirsten Green (Forerunner)', snippet: 'asked about burn rate and runway' }, { investor: 'Rajan Anandan (Peak XV)', snippet: 'asked about burn rate and runway' }] }], notes);
+  assert.equal(bad.length, 0);
+});

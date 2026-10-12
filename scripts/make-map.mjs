@@ -25,7 +25,7 @@ const rows = [
 // [id, row, col, text]
 const boxes = [
   ['p_trig', 0, 'Trigger', 'Investor meeting booked: she enters name + firm, or her calendar surfaces it'],
-  ['s_trig', 1, 'Trigger', 'Every 30 min: calendar link scan finds investor meetings due within 24 hours'],
+  ['s_trig', 1, 'Trigger', 'Every 30 min: calendar scan, brief preparation, and any due email nudges'],
   ['p_in', 0, 'Input', 'Name + firm. Optional: meeting time, a post she pastes'],
   ['p_ctx', 0, 'Context', 'Saved startup profile: stage, sector, raise, traction'],
   ['p_out', 0, 'Output', 'Brief in about a minute: deals, thesis, watch-outs, 3 talking points'],
@@ -38,7 +38,8 @@ const boxes = [
   ['g_out', 4, 'Output', 'Unverified claims dropped and listed as "left out and why"'],
   ['d_ctx', 5, 'Context', 'Briefs, claims, sources, cost and feedback; private per workspace'],
   ['d_proc', 5, 'Processing', 'Logs status, time, tokens and cost for every brief'],
-  ['v_proc', 6, 'Processing', 'Formats for skim reading; PDF; share link; phone meeting card'],
+  ['v_proc', 6, 'Processing', 'Formats for reading, PDF, phone meeting card; sends nudges from a Gmail sender'],
+  ['v_out', 6, 'Output', 'Email nudge (confirmed address only): brief ready, refreshed brief before the meeting, follow-up reminder'],
   ['f_trig', 7, 'Trigger', 'Meeting done: she adds notes, or practises an answer'],
   ['f_in', 7, 'Input', 'Her notes, and the answer she typed or dictated'],
   ['f_ctx', 7, 'Context', 'Her startup profile and the verified claims only'],
@@ -71,6 +72,7 @@ const edges = [
   ['d_proc', 'v_proc', (a, b) => [[cx(a), a.y + a.h], [cx(b), b.y]]],
   ['v_proc', 'p_out', (a, b) => [[a.x + a.w, cy(a)], [W - X0 - 5, cy(a)], [W - X0 - 5, cy(b) + 6], [b.x + b.w, cy(b) + 6]]],
   ['d_proc', 'k_proc', (a, b) => [[a.x + 22, a.y + a.h], [a.x + 22, b.y]]],
+  ['v_proc', 'v_out', (a, b) => [[a.x + a.w, cy(a) + 12], [b.x, cy(b) + 12]]],
   ['f_trig', 'f_in', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['f_in', 'f_ctx', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['f_ctx', 'f_proc', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],

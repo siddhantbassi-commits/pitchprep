@@ -7,6 +7,7 @@ import { STATUSES, STATUS_LABEL, fitLabel, fitScore, type Status } from '@/lib/t
 import { fmtDate } from '@/lib/format';
 
 type Sort = 'fit' | 'next' | 'recent';
+interface Theme { theme: string; prepare: string; investors: string[]; evidence: { investor: string; snippet: string }[] }
 
 export default function PipelineBoard({ initial }: { initial: PipelineItem[] }) {
   const [items, setItems] = useState(initial);
@@ -15,6 +16,17 @@ export default function PipelineBoard({ initial }: { initial: PipelineItem[] }) 
   const [q, setQ] = useState('');
   const [openNotes, setOpenNotes] = useState<string | null>(null);
   const [err, setErr] = useState('');
+  const [pat, setPat] = useState<{ themes: Theme[]; used: number } | null>(null);
+  const [patBusy, setPatBusy] = useState(false);
+  const withNotes = items.filter((i) => i.notes.trim().length >= 40).length;
+
+  async function findPatterns() {
+    setPatBusy(true); setErr('');
+    const r = await fetch('/api/pipeline/patterns', { method: 'POST' });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok) setErr(j.error ?? 'Could not analyse your notes.'); else setPat(j);
+    setPatBusy(false);
+  }
 
   const counts = useMemo(() => Object.fromEntries(STATUSES.map((s) => [s, items.filter((i) => i.status === s).length])) as Record<Status, number>, [items]);
   const shown = useMemo(() => {
@@ -44,6 +56,26 @@ export default function PipelineBoard({ initial }: { initial: PipelineItem[] }) 
   const today = new Date().toISOString().slice(0, 10);
   return (
     <div>
+      <section className="card mb-6 p-5" aria-labelledby="pat">
+        <h2 id="pat" className="text-lg font-semibold">What investors keep raising with you</h2>
+        <p className="text-sm text-muted">Finds concerns that come up with two or more investors in your own meeting notes, so you can fix the answer once. Every theme is backed by a quote from your notes.</p>
+        {withNotes < 2 ? <p className="mt-2 text-sm text-muted">Add meeting notes for at least two investors (a few lines each) to unlock this. You have {withNotes}.</p> : (
+          <button className="btn mt-3" onClick={findPatterns} disabled={patBusy}>{patBusy ? 'Reading your notes…' : pat ? 'Analyse again' : 'Find patterns in my notes'}</button>
+        )}
+        {pat && pat.themes.length === 0 && <p className="mt-3 text-sm text-muted">No concern came up with two investors yet, across {pat.used} sets of notes. That is useful too.</p>}
+        {pat && pat.themes.length > 0 && (
+          <ul className="mt-4 space-y-4">
+            {pat.themes.map((t) => (
+              <li key={t.theme} className="border-t border-line pt-3">
+                <p className="font-medium">{t.theme} <span className="chip ml-1">{t.investors.length} of {pat.used} investors</span></p>
+                <ul className="mt-1 space-y-0.5 text-sm text-muted">{t.evidence.map((e, i) => <li key={i}><strong className="text-ink font-medium">{e.investor}:</strong> &ldquo;{e.snippet}&rdquo;</li>)}</ul>
+                <p className="mt-1 text-sm"><span className="font-medium">Prepare:</span> {t.prepare}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       <div role="group" aria-label="Filter by status" className="flex flex-wrap gap-2">
         <button className={`chip cursor-pointer ${filter === 'all' ? 'bg-brand-soft text-brand border-transparent' : ''}`} onClick={() => setFilter('all')} aria-pressed={filter === 'all'}>All {items.length}</button>
         {STATUSES.map((s) => (
