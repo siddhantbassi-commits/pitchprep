@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit",
     "spike": "tsx --env-file=.env.local scripts/spike.mts",
     "eval": "tsx --env-file=.env.local scripts/eval.mts",
+    "seed": "tsx --env-file=.env.local scripts/seed.mts",
     "run": "tsx --env-file=.env.local scripts/run.mts",
     "db:setup": "tsx --env-file=.env.local scripts/db-setup.mts"
   },
