@@ -36,7 +36,8 @@ Rules:
 6. Only include deals that involve the named investor personally or their firm. Do not include personal-life information of any kind.
 7. identity.found is true only if the evidence shows the named person is associated with the named firm. If several people could match, say so in ambiguity.
 8. Do not add details that the quote does not contain: no round type (seed, Series A), amount, valuation, "led", "existing investor" or "first investment" unless those words or figures are in the quote itself. Fewer details, all supported, beats more details.
-9. Be exhaustive within the evidence: up to 12 deals, 8 thesis, 8 context, 5 firm claims. Quality over quantity: skip anything you cannot quote.`;
+9. Attribution: for a stated view (kind statement) the evidence must show WHO said it, and it must be the named investor or someone clearly at the named firm. Write the claim with that speaker named (for example "Vani Kola said..." or "A Kalaari partner, Name, said..."). If the evidence does not say who spoke, or the speaker is a third party, do not extract it as the investor's view. Never write "a speaker" or "someone".
+10. Be exhaustive within the evidence: up to 12 deals, 8 thesis, 8 context, 5 firm claims. Quality over quantity: skip anything you cannot quote.`;
 
 export function extractPrompt(a: { name: string; firm: string; today: string; windowStart: string; evidence: Evidence[] }): string {
   const ev = a.evidence
@@ -56,6 +57,7 @@ Rules:
 1. Use only the verified claims for facts about the investor. Never add facts about the investor from your own knowledge. If the claims are thin, say what is unknown rather than filling in.
 2. Produce exactly 3 talking points. Each must build on at least one verified claim (list its id in claimIds) AND be tailored to the founder's stage and sector (state the specific startup fact it uses in tailoredTo). The opener is one natural sentence of at most 30 words the founder could say aloud.
 3. Never claim to know what the investor will do or think; use language like "has said", "recently backed". Stay faithful to each claim's exact wording: never widen its scope (a view about "consumer AI startups" is not a view about "consumer products"), never change numbers, and never put words in the investor's mouth that the claim does not state.
+3a. Attribute exactly as the claim does. Only say "you have said" or "you noted" when the claim names the investor as the speaker. If the claim is about the firm, say "Kalaari has said"; if it names another person at the firm, name them. Never turn a firm-level or third-party statement into the investor's personal words in an opener.
 3b. If the fit is weak or unknown, be honest: build the talking point around the genuinely relevant overlap (for example their stated views on consumer behaviour or capital efficiency), and say in the angle that this is a bridge rather than a direct thesis match. Do not pretend the investor backs the founder's sector.
 4. Do not suggest anything manipulative, and do not reference personal-life information.
 5. skim: exactly 3 bullets, each under 22 words, the most useful things to know in 20 seconds.

@@ -70,7 +70,7 @@ export default function Evidence() {
       </ul>
 
       <h2 className="mt-10 text-2xl font-semibold">Per-case results</h2>
-      <div className="card mt-3 overflow-x-auto">
+      <div className="card mt-3 overflow-x-auto" tabIndex={0} role="region" aria-label="Evaluation results table, scrollable">
         <table className="w-full text-sm">
           <caption className="sr-only">Evaluation results per case</caption>
           <thead><tr className="text-left text-muted border-b border-line"><th className="p-3">Case</th><th className="p-3">Input</th><th className="p-3">Outcome</th><th className="p-3">Time</th><th className="p-3">Verified / extracted</th><th className="p-3">Deals (90d)</th></tr></thead>
@@ -93,7 +93,7 @@ export default function Evidence() {
       </div>
 
       <h2 className="mt-10 text-2xl font-semibold">Reproduce it</h2>
-      <pre className="card mt-3 overflow-x-auto p-4 text-sm"><code>git clone {REPO}.git{'\n'}cd pitchprep &amp;&amp; npm install{'\n'}npm test        # 39 unit tests: verification gate, dates, quotes, SSRF guard, numbers{'\n'}npm run eval    # the live evaluation above</code></pre>
+      <pre className="card mt-3 overflow-x-auto p-4 text-sm" tabIndex={0} aria-label="Commands to reproduce the evaluation"><code>git clone {REPO}.git{'\n'}cd pitchprep &amp;&amp; npm install{'\n'}npm test        # 39 unit tests: verification gate, dates, quotes, SSRF guard, numbers{'\n'}npm run eval    # the live evaluation above</code></pre>
       <p className="mt-4 text-sm text-muted">What this does not prove: coverage is not completeness (&ldquo;no deals found&rdquo; means none could be sourced), results vary run to run because live search varies, and a correct quote from a wrong source is still wrong, which is why every claim links to its source. See <Link className="underline" href="/method">How it works</Link>.</p>
     </div>
   );
