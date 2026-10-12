@@ -7,6 +7,7 @@ import AfterMeeting from './AfterMeeting';
 import MeetingCard from './MeetingCard';
 import MockMeeting from './MockMeeting';
 import PreMortem from './PreMortem';
+import WarmBadge from './WarmBadge';
 import Rehearse from './Rehearse';
 import VerifyList from './VerifyList';
 import FreshnessChip from './FreshnessChip';
@@ -167,6 +168,7 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
         </div>
       </header>
       {copied && <p role="status" className="no-print mt-2 text-sm text-brand font-medium">{copied}</p>}
+      {canAssist && result.status !== 'unverified' && <div className="no-print"><WarmBadge firm={result.investor.firm} investor={result.investor.name} onAsk={(who) => window.dispatchEvent(new CustomEvent('pp-intro', { detail: who }))} /></div>}
 
       {result.investor.ambiguity && (
         <div className="mt-4 rounded-xl border border-line bg-amber-soft text-amber p-3 text-sm"><strong>Check the match:</strong> {result.investor.ambiguity}</div>

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import WarmBadge from './WarmBadge';
 import { fmtDate } from '@/lib/format';
 import { describe, groupByDeal, type Candidate, type DealGroup, type Described, type DiscoveryResult } from '@/lib/discover';
 import type { StageState } from '@/lib/types';
@@ -184,6 +185,7 @@ function DealCard({ g }: { g: DealGroup }) {
               <span className={`chip ${STYLE[i.described.tone]}`}>{i.described.label}</span>
             </div>
             <p className="mt-1 text-sm text-muted">{i.described.why}</p>
+            <WarmBadge firm={i.firm} investor={i.partner ?? undefined} />
             <details className="mt-1 text-sm"><summary className="cursor-pointer underline text-muted">Exact quote</summary><blockquote className="mt-1 border-l-4 border-line pl-3 text-muted">&ldquo;{i.quote}&rdquo;</blockquote></details>
             <details className="mt-2"><summary className="cursor-pointer text-sm font-medium text-brand underline">Research {i.firm}</summary><div className="mt-2"><ResearchBar firm={i.firm} partner={i.partner} id={`${g.key}-${i.firm}`} /></div></details>
           </li>
@@ -207,6 +209,7 @@ function CandidateCard({ c, today }: { c: Candidate; today: string }) {
       </div>
       <p className="mt-2 text-sm">{d.why}</p>
       <p className="text-sm text-muted">{d.next}</p>
+      <WarmBadge firm={c.firm} investor={c.partner ?? undefined} />
       {c.chequeNote && <p className="mt-2 text-sm"><b>Cheque or focus:</b> {c.chequeNote} {c.chequeQuote && <span className="text-muted">(&ldquo;{c.chequeQuote}&rdquo;)</span>}</p>}
       <ul className="mt-3 space-y-2">
         {c.deals.slice(0, open ? 20 : 2).map((x) => (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 /** A first message to an investor the founder has not met yet, built from verified facts only. A draft: she edits and sends it herself. */
 export default function Outreach({ briefId, investor }: { briefId: string; investor: string }) {
@@ -10,6 +10,17 @@ export default function Outreach({ briefId, investor }: { briefId: string; inves
   const [err, setErr] = useState('');
   const [draft, setDraft] = useState<{ subject: string; body: string; checks: string[]; blurb?: string } | null>(null);
   const [copied, setCopied] = useState('');
+  const [open, setOpen] = useState(false);
+
+  // "Ask for an intro" buttons elsewhere (warm paths) open this panel with the forwardable draft and the contact filled in.
+  useEffect(() => {
+    const ask = (who: string) => { setChannel('forwardable'); setAsk(who); setDraft(null); setOpen(true); setTimeout(() => document.getElementById('intro')?.scrollIntoView({ block: 'center' }), 100); };
+    const q = new URLSearchParams(location.search).get('intro');
+    if (q) ask(q.slice(0, 200));
+    const h = (e: Event) => ask(String((e as CustomEvent).detail ?? ''));
+    window.addEventListener('pp-intro', h);
+    return () => window.removeEventListener('pp-intro', h);
+  }, []);
 
   async function make() {
     setBusy(true); setErr('');
@@ -25,7 +36,7 @@ export default function Outreach({ briefId, investor }: { briefId: string; inves
   }
 
   return (
-    <details className="card mt-10 p-5 no-print">
+    <details id="intro" className="card mt-10 p-5 no-print" open={open} onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}>
       <summary className="cursor-pointer text-lg font-semibold">Haven&apos;t met {investor} yet? Draft an intro message</summary>
       <p className="mt-2 text-sm text-muted">Built only from the verified facts above and your startup profile, with one accurate hook and one small ask. You edit it and send it yourself.</p>
       <fieldset className="mt-3 flex items-center gap-4 text-sm"><legend className="sr-only">Channel</legend>

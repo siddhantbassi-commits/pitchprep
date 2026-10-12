@@ -1,5 +1,6 @@
 'use client';
 
+import { clearContacts } from '@/lib/warm';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { FounderProfile } from '@/lib/types';
@@ -28,8 +29,9 @@ export default function ProfileForm({ initial }: { initial: FounderProfile }) {
   }
 
   async function wipe() {
-    if (!confirm('Delete your profile and every brief, source and note saved in this browser? This cannot be undone.')) return;
+    if (!confirm('Delete your profile and every brief, source, note and loaded contact saved in this browser? This cannot be undone.')) return;
     await fetch('/api/workspace', { method: 'DELETE' });
+    clearContacts(); // contacts live only in this browser, so erasing your data erases them too
     router.push('/');
     router.refresh();
   }
