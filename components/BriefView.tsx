@@ -6,6 +6,7 @@ import type { BriefResult, Claim, Confidence, Evidence, FounderProfile, Section,
 import AfterMeeting from './AfterMeeting';
 import MeetingCard from './MeetingCard';
 import MockMeeting from './MockMeeting';
+import PreMortem from './PreMortem';
 import Rehearse from './Rehearse';
 import VerifyList from './VerifyList';
 import FreshnessChip from './FreshnessChip';
@@ -306,6 +307,8 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           </div>
         </section>
       )}
+
+      {canAssist && result.status !== 'unverified' && <PreMortem briefId={data.id} investor={result.investor.name} />}
 
       {canAssist && result.status !== 'unverified' && <MockMeeting briefId={data.id} investor={result.investor.name} />}
 

@@ -278,3 +278,14 @@ grant usage on schema public to service_role;
 grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings, investor_notes, nudge_prefs, nudges_sent, raise_plans, raise_commitments, discoveries, mock_sessions to service_role;
 grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq, nudges_sent_id_seq to service_role;
 grant execute on function bump_rate(text, timestamptz) to service_role;
+
+-- Pre-mortem: why an investor might pass, per brief, so a reload does not re-run the model.
+create table if not exists premortems (
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  brief_id uuid not null references briefs(id) on delete cascade,
+  result jsonb not null,
+  created_at timestamptz not null default now(),
+  primary key (workspace_id, brief_id)
+);
+alter table premortems enable row level security;
+grant all on table premortems to service_role;

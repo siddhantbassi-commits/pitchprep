@@ -2,11 +2,12 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { Scorecard, Turn } from '@/lib/mock';
-import { fmtDate } from '@/lib/format';
+import PracticeProgress from './PracticeProgress';
+import type { SessionLite } from '@/lib/progress';
 
 const TOTAL = 5;
 type SR = { start(): void; stop(): void; onresult: ((e: any) => void) | null; onend: (() => void) | null; continuous: boolean; interimResults: boolean; lang: string };
-interface Past { id: string; difficulty: string; overall: number | null; created_at: string }
+type Past = SessionLite;
 
 /** A five-question practice round with a simulated investor. Built only from the verified brief; scored with code-checked numbers. */
 export default function MockMeeting({ briefId, investor }: { briefId: string; investor: string }) {
@@ -30,7 +31,7 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
     setCanSpeak('speechSynthesis' in window);
     setCanDictate(!!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition));
   }, []);
-  useEffect(() => { if (open) fetch(`/api/briefs/${briefId}/mock`, { cache: 'no-store' }).then((r) => r.json()).then((j) => setPast(j.sessions ?? [])).catch(() => {}); }, [open, briefId, card]);
+  useEffect(() => { if (open) fetch('/api/mock/progress', { cache: 'no-store' }).then((r) => r.json()).then((j) => setPast(j.sessions ?? [])).catch(() => {}); }, [open, briefId, card]);
   useEffect(() => { endRef.current?.scrollIntoView?.({ block: 'nearest' }); }, [turns, card]);
   useEffect(() => () => { window.speechSynthesis?.cancel(); rec.current?.stop(); }, []);
 
@@ -119,7 +120,7 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
             </fieldset>
             {canSpeak && <label className="mt-3 flex items-center gap-2 text-sm"><input type="checkbox" checked={speak} onChange={(e) => setSpeak(e.target.checked)} /> Read their questions aloud</label>}
             <button className="btn btn-primary mt-4" onClick={begin} disabled={busy}>{busy ? 'Connecting…' : 'Begin'}</button>
-            {past.length > 0 && <PastList past={past} />}
+            {past.length > 0 && <div className="mt-5 border-t border-line pt-4"><PracticeProgress sessions={past} compact /></div>}
           </div>
         )}
 
@@ -159,15 +160,6 @@ export default function MockMeeting({ briefId, investor }: { briefId: string; in
         {card && <Card card={card} onAgain={() => { setTurns([]); setCard(null); }} past={past} />}
       </div>
     </section>
-  );
-}
-
-function PastList({ past }: { past: Past[] }) {
-  return (
-    <div className="mt-5 border-t border-line pt-3">
-      <p className="label">Your earlier rounds with this investor</p>
-      <ul className="mt-2 text-sm text-muted space-y-1">{past.map((p) => <li key={p.id}>{fmtDate(p.created_at.slice(0, 10))} · {p.difficulty} · <b className="text-ink">{p.overall ?? '–'}/100</b></li>)}</ul>
-    </div>
   );
 }
 
