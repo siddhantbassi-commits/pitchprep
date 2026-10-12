@@ -102,3 +102,6 @@ The brief answers "what do I say to this investor?". A founder also needs "who s
 | **Bump and Monday summary** | Drafts the bump from her notes | Decides when (7 to 45 days after a follow-up, nothing scheduled, one a day, one per follow-up state); withholds a draft containing any untraceable figure; builds the summary from her data |
 
 Not built on purpose: predicting who will invest (nothing supports it), scraping LinkedIn for mutual connections (see the nine checks), and a public sign-up flow, which would change the privacy model and is the next step if this leaves the classroom.
+
+## Resilience: search quota
+Google caps grounded searches per day on the Gemini API. `grounded()` in `lib/gemini.ts` retries a quota or availability error once through OpenRouter (`google/gemini-3.8-flash` with its web plugin, which returns Google grounding citations), mapping them into the same structure the pipeline already reads. It only triggers on 429/503-type errors, so normal runs are unchanged; quality and verification are identical because every claim still has to pass the same quote, date and speaker checks. Cost is reported through the same meter.

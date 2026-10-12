@@ -1,7 +1,7 @@
 export const metadata = { title: 'How it works: PitchPrep' };
 
 const steps = [
-  ['1. Search the live web', 'Five Gemini Flash research calls run in parallel with Google Search grounding: new investments, exits and milestones, stated thesis, portfolio context and firm facts.'],
+  ['1. Search the live web', 'Five Gemini Flash research calls run in parallel with Google Search grounding (and, if Google's daily search quota is ever exhausted, the same Gemini model through OpenRouter's Google-grounded search): new investments, exits and milestones, stated thesis, portfolio context and firm facts.'],
   ['2. Open the sources', 'We resolve every citation to the real article, fetch it ourselves (respecting robots.txt, blocking private addresses), and read the publication date from the page.'],
   ['3. Extract claims with quotes', 'Gemini Flash, with no search tools, turns the evidence into short claims. Each must carry a word-for-word quote and the source it came from.'],
   ['4. Verify in code', 'The quote must appear in the source text, the source must be about this investor, deals must be dated inside the last 90 days, a stated view must name the investor or firm as the speaker, and duplicates are removed. A second Gemini pass fact-checks the survivors, and any claim it finds only partly supported is rewritten down to what the quote actually states.'],

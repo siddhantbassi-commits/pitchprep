@@ -25,6 +25,13 @@ function ai(): GoogleGenAI {
 
 export class Meter {
   u: Usage = { calls: 0, promptTokens: 0, outputTokens: 0, thoughtTokens: 0, groundedQueries: 0, costUsd: 0 };
+  /** Cost reported by a provider that bills for us (the OpenRouter fallback). */
+  addCost(usd: number, tokens?: { prompt?: number; output?: number }) {
+    this.u.calls += 1;
+    this.u.promptTokens += tokens?.prompt ?? 0;
+    this.u.outputTokens += tokens?.output ?? 0;
+    this.u.costUsd += usd;
+  }
   add(meta: { promptTokenCount?: number; candidatesTokenCount?: number; thoughtsTokenCount?: number } | undefined, queries = 0) {
     this.u.calls += 1;
     this.u.promptTokens += meta?.promptTokenCount ?? 0;
@@ -69,8 +76,7 @@ export interface GroundedResult {
   queries: string[];
 }
 
-/** One Google-Search-grounded research call. Returns the narrative plus which source supports which span. */
-export async function grounded(prompt: string, meter: Meter, timeoutMs = 55_000): Promise<GroundedResult> {
+async function groundedGoogle(prompt: string, meter: Meter, timeoutMs: number): Promise<GroundedResult> {
   return retrying(async () => {
     const res = await withTimeout(
       ai().models.generateContent({
@@ -153,3 +159,57 @@ export function searchUnavailableMessage(reasons: unknown[]): string {
     ? 'Live-search capacity for today has been used up, so new briefs and investor searches cannot run right now. The example briefs, your saved briefs and everything else still work. Capacity renews daily (around 1 PM India time); please try again then.'
     : 'Live search is unavailable right now. Please try again in a minute.';
 }
+
+const QUOTA = /429|RESOURCE_EXHAUSTED|exceeded your current quota|503|UNAVAILABLE/i;
+
+/**
+ * Gemini 3.8 Flash through OpenRouter with its web search, used only when Google's own search quota is exhausted. It is still
+ * Gemini Flash, and the search is Google Search grounding: the citations come back as the same grounding redirect links.
+ */
+async function groundedOpenRouter(prompt: string, meter: Meter, timeoutMs: number): Promise<GroundedResult> {
+  const key = process.env.OPENROUTER_API_KEY;
+  if (!key) throw new Error('OPENROUTER_API_KEY is not set');
+  const res = await withTimeout(
+    fetch('https://openrouter.ai/api/v1/chat/completions', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${key}`, 'content-type': 'application/json', 'x-title': 'PitchPrep' },
+      body: JSON.stringify({ model: `google/${MODEL()}`, messages: [{ role: 'user', content: prompt }], plugins: [{ id: 'web', max_results: 8 }], temperature: 0.1, reasoning: { effort: 'low' }, max_tokens: 6000 }),
+    }),
+    timeoutMs,
+    'openrouter grounded call',
+  );
+  const j = (await res.json().catch(() => ({}))) as {
+    error?: { message?: string };
+    choices?: { message?: { content?: string; annotations?: { type?: string; url_citation?: { url?: string; title?: string; start_index?: number; end_index?: number } }[] } }[];
+    usage?: { cost?: number; cost_details?: { upstream_inference_cost?: number }; prompt_tokens?: number; completion_tokens?: number; server_tool_use_details?: { web_search_requests?: number } };
+  };
+  if (!res.ok || j.error) throw new Error(`openrouter: ${String(j.error?.message ?? res.status).slice(0, 200)}`);
+  const msg = j.choices?.[0]?.message;
+  const text = msg?.content ?? '';
+  const chunks: { uri: string; title: string }[] = [];
+  const supports: GroundedResult['supports'] = [];
+  for (const a of msg?.annotations ?? []) {
+    const c = a.url_citation; if (!c?.url) continue;
+    let idx = chunks.findIndex((x) => x.uri === c.url);
+    if (idx < 0) { chunks.push({ uri: c.url, title: c.title ?? '' }); idx = chunks.length - 1; }
+    const start = c.start_index ?? 0, end = c.end_index ?? 0;
+    const hit = supports.find((x) => x.start === start && x.end === end);
+    if (hit) { if (!hit.chunkIdx.includes(idx)) hit.chunkIdx.push(idx); } else supports.push({ start, end, text: text.slice(start, end), chunkIdx: [idx] });
+  }
+  const searches = j.usage?.server_tool_use_details?.web_search_requests ?? 0;
+  meter.addCost(j.usage?.cost_details?.upstream_inference_cost ?? j.usage?.cost ?? 0, { prompt: j.usage?.prompt_tokens, output: j.usage?.completion_tokens });
+  meter.u.groundedQueries += searches;
+  return { text, supports, chunks, queries: Array.from({ length: searches }, (_, i) => `web search ${i + 1}`) };
+}
+
+/** One Google-Search-grounded research call. Returns the narrative plus which source supports which span. Falls back to OpenRouter on quota errors. */
+export async function grounded(prompt: string, meter: Meter, timeoutMs = 55_000): Promise<GroundedResult> {
+  try {
+    return await groundedGoogle(prompt, meter, timeoutMs);
+  } catch (e) {
+    if (!process.env.OPENROUTER_API_KEY || !QUOTA.test(String((e as Error)?.message ?? e))) throw e;
+    return groundedOpenRouter(prompt, meter, timeoutMs);
+  }
+}
+
+export const searchFallbackConfigured = () => !!process.env.OPENROUTER_API_KEY;

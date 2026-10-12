@@ -54,8 +54,11 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 | `npm run eval` | Golden-set evaluation (writes docs/eval-report.md) |
 | `npm run typecheck` | TypeScript check |
 
+## Search resilience
+Live search normally runs on Google Search grounding through the Gemini API. If Google's search quota is exhausted (a daily cap), the app automatically retries the same call on **Gemini 3.8 Flash through OpenRouter**, whose web search is also Google Search grounding (citations come back as the same grounding links), so briefs and investor searches keep working. It is still Gemini Flash only, the verification gate is unchanged, and `/api/health` reports `searchFallback`.
+
 ## Environment
-`GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.8-flash`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. The service key is used only on the server; browsers never talk to the database.
+`GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.8-flash`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. Optional: `OPENROUTER_API_KEY`, a search fallback (see below). The service key is used only on the server; browsers never talk to the database.
 
 ## Beyond the brief
 Not just a brief: the whole fundraising workflow around it.
