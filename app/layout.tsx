@@ -11,7 +11,8 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'sw
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.APP_URL || 'https://pitchprep-three.vercel.app'),
   title: 'PitchPrep: pre-meeting investor briefs',
-  openGraph: { title: 'PitchPrep: know who you are sitting across from', description: 'Sourced, fact-checked investor briefs with tailored talking points, in about a minute.', type: 'website', siteName: 'PitchPrep' },
+  openGraph: { title: 'PitchPrep: know who you are sitting across from', description: 'Sourced, fact-checked investor briefs with tailored talking points, in about a minute.', type: 'website', siteName: 'PitchPrep', url: '/' },
+  twitter: { card: 'summary_large_image', title: 'PitchPrep: know who you are sitting across from', description: 'Sourced, fact-checked investor briefs with tailored talking points, in about a minute.' },
   description: 'Enter an investor and their firm. Get a sourced, fact-checked briefing in under two minutes: recent deals, stated thesis, watch-outs and three tailored talking points.',
 };
 export const viewport: Viewport = { width: 'device-width', initialScale: 1, themeColor: '#1f5f4a' };
