@@ -24,7 +24,7 @@ The two errors had genuine quotes, so the quote-in-source check could not see th
 1. The fact-check pass now returns, for any partly supported claim, a rewrite stating only what the quote says, and that rewrite replaces the model's wording (shown as "narrowed to the source").
 2. The extraction prompt forbids adding round types, amounts, "led" or "existing investor" unless the quote contains them.
 
-After the fix the evaluation was re-run in full (see [eval-report.md](eval-report.md)) and the example briefs were regenerated. Re-running Alexis Ohanian, the Starcloud qualifier no longer appears.
+After the fix the evaluation was re-run in full (see [eval-report.md](eval-report.md)) and the example briefs were regenerated. In a re-run of Alexis Ohanian none of the displayed deal claims carried an unstated qualifier. The Starcloud round did not come up in that run, so this is an observation, not proof that the fix works; the fix is judged by its design (the displayed text can only be what the quote supports) and the full re-run.
 
 ## What this does not establish
 Six checked claims cannot show an error rate. The point of the exercise was to find a failure mode the automated checks missed, and it did. Every claim in the product links to its source so that the user can do this check in one click.
