@@ -95,6 +95,10 @@ The brief answers "what do I say to this investor?". A founder also needs "who s
 | **Raise cockpit** | Nothing | All arithmetic: progress, coverage, dilution, founder stake, runway, warnings; odds are labelled assumptions she can edit |
 | **Pitch readiness** | Nothing | 11 keyword rules over her profile |
 | **Forwardable intro** | Writes the note and the third-person blurb | Flags figures, placeholders and any sentence that characterises the investor's interests |
+| **Deck check** | Transcribes the PDF; lists figures with the exact sentence | Drops a figure whose sentence is not in the transcript; compares figures with the profile and with each other; runs the readiness rules over the deck; never stores the deck |
+| **Warm paths** | Nothing | Parses the connections export in the browser, discards email addresses, matches contacts to firms by distinctive name; contacts never leave the device |
+| **Pre-mortem** | Proposes up to three ways an investor could pass | Keeps a reason only if it cites a verified claim, quotes the profile verbatim, or names a real weak skill; refuses certainty about the decision |
+| **Practice progress** | Nothing | Arithmetic over saved mock rounds: trend, weak skills, rounds with figure flags |
 | **Bump and Monday summary** | Drafts the bump from her notes | Decides when (7 to 45 days after a follow-up, nothing scheduled, one a day, one per follow-up state); withholds a draft containing any untraceable figure; builds the summary from her data |
 
 Not built on purpose: predicting who will invest (nothing supports it), scraping LinkedIn for mutual connections (see the nine checks), and a public sign-up flow, which would change the privacy model and is the next step if this leaves the classroom.

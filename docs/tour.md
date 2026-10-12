@@ -1,4 +1,4 @@
-# Tour: three minutes, plus walkthroughs for the founder toolkit and the email nudges
+# Tour: three minutes, plus walkthroughs for the founder toolkit, the second round of features and the email nudges
 
 Live app: https://pitchprep-three.vercel.app. No login. Everything below is real: nothing is mocked and no data is hard-coded.
 
@@ -64,3 +64,16 @@ All of this works on the sample founder (Priya, Sattva Kitchen) with no sign-in;
 - The mock investor may use only the brief's verified facts and is labelled a simulation. The scorecard's overall number is arithmetic on four scores, and a "strongest moment" the model invents (not word for word in your answers) is withheld.
 - The bump email drafts from your notes and is left out entirely if it contains a figure code cannot trace to your profile, notes or verified facts.
 - Nothing predicts who will invest. The raise cockpit's expected-value odds are assumptions you can edit and are labelled as such.
+
+## New in the founder toolkit (second round)
+
+| # | Do this | What you should see |
+|---|---|---|
+| N1 | Open **Home** in a fresh browser | A **Start here** panel with three steps (your startup, find who to talk to, prepare and track). **Got it, hide this** removes it for good in that browser |
+| N2 | **Discover**, run a search, then use **By round** and **By investor** | By round: each funding round once, with every verified investor on it. Each investor has a specific label (such as Closest match or Right category) and one plain sentence, for example "Backed Anmasa (Seed) 3 weeks ago: your category, your stage." |
+| N3 | **Pipeline**, scroll to **People you already know**, click **Try with sample contacts** | Fictional contacts matched to the firms in your pipeline (add an example investor first). **Ask for an intro** opens that brief with the warm-intro draft ready and the contact filled in. With a real **Connections.csv** the file is read in your browser only and never uploaded |
+| N4 | On the same page click **Remove them**, or use **Delete all my data** on My startup | The contacts disappear from the browser. Nothing was ever stored on the server |
+| N5 | **Raise**, scroll to **Check my pitch deck**, choose **Paste the text**, click **Use a sample deck**, then **Check my deck** | "2 things to fix": gross margin 55% against 58% in your profile, and $5M against $4M. Each shows its slide and exact sentence. Below it, the numbers investors ask for (burn, CAC and others) that the deck never mentions. A real PDF works too (up to 3.9 MB) |
+| N6 | Open any brief, scroll to **Why might they pass?** and click **Run a pre-mortem** | Up to three reasons, each labelled as resting on a verified fact about them, a line of your profile, or your mock-meeting results, with what to prepare. Reload: it is still there |
+| N7 | Finish two or more **mock meetings**, then open **Raise** | **Your practice progress**: a score chart, the average per skill, and plain insights such as which skill scored 2 or lower in half your rounds |
+| N8 | Paste or post the app's link on LinkedIn or X | A proper preview card instead of a bare link |

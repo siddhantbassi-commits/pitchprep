@@ -20,7 +20,7 @@ const rows = [
   ['Database', 'Supabase', '#f3f6fc'],
   ['Delivery', 'Web · PDF · meeting card', '#f6f6f1'],
   ['After the meeting', 'Notes · follow-up · practice', '#fff6ee'],
-  ['Raise tools', 'Discover · Raise · Practice', '#f4f9f7'],
+  ['Raise tools', 'Discover · Raise · Deck · Practice', '#f4f9f7'],
   ['Dashboard', 'Vercel', '#fdf2f4'],
 ];
 // [id, row, col, text]
@@ -48,11 +48,11 @@ const boxes = [
   ['f_ai', 7, 'AI', 'Drafts the follow-up; coaches the answer'],
   ['f_out', 7, 'Output', 'A draft she edits and sends herself; status and next step saved'],
   ['r_trig', 8, 'Trigger', 'She asks "Who should I pitch?", opens her round, or starts a mock meeting'],
-  ['r_in', 8, 'Input', 'Her startup profile and an optional focus; amounts and stages investors tell her'],
+  ['r_in', 8, 'Input', 'Her profile and focus; her pitch deck (PDF or text); her own contacts file, kept in the browser'],
   ['r_ctx', 8, 'Context', 'Live search of recent rounds, peers and funds; her pipeline; a verified brief'],
-  ['r_proc', 8, 'Processing', 'Code verifies each deal (quote, date, firm), ranks by recency and fit, and does the round arithmetic'],
-  ['r_ai', 8, 'AI', 'Extracts investors and deals; plays the investor from verified facts only; scores her answers'],
-  ['r_out', 8, 'Output', 'Ranked investors with sources; round progress, dilution, runway; scorecard; Monday summary'],
+  ['r_proc', 8, 'Processing', 'Code verifies each deal, checks deck figures against her profile, matches contacts, does the round maths'],
+  ['r_ai', 8, 'AI', 'Finds investors, reads the deck, plays the investor from verified facts, writes the pre-mortem, scores answers'],
+  ['r_out', 8, 'Output', 'Investors by round; deck report; warm paths; pre-mortem; round progress; scorecard and trend'],
   ['k_proc', 9, 'Processing', 'Aggregates KPIs from Supabase'],
   ['k_out', 9, 'Output', 'Live dashboard: time to brief, verification rate, cost per brief'],
 ];
