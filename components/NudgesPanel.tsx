@@ -136,6 +136,20 @@ export default function NudgesPanel({ banner }: { banner?: string }) {
           {!prefs.verified && <p className="mt-3 text-xs text-muted">Until you confirm, we send nothing except that one confirmation email.</p>}
         </div>
       )}
+      {!prefs?.verified && (
+        <div className="card mt-3 max-w-2xl p-5 sm:p-6">
+          <p className="font-medium">See what each email looks like</p>
+          <p className="text-sm text-muted">No address needed. Each preview is built from your latest brief (or an example) and nothing is sent.</p>
+          <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+            {TOGGLES.map((t) => (
+              <li key={t.key} className="flex items-baseline justify-between gap-3 rounded-lg border border-line px-3 py-2 text-sm">
+                <span>{t.label}</span>
+                <a className="underline text-muted" href={`/api/nudges/preview?kind=${t.preview}`} target="_blank" rel="noopener noreferrer">Preview<span className="sr-only"> {t.label} email (opens in a new tab)</span></a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <p className="mt-3 text-xs text-muted">Privacy: your address is stored only to send these emails, is included in &ldquo;Download my data&rdquo; and removed by &ldquo;Delete all my data&rdquo;. Emails show your brief&apos;s content, so use an address only you read. The one-tap link in an email signs in whoever opens it, so do not forward emails.</p>
     </section>
   );
