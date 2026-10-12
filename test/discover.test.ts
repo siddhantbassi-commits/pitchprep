@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { audit, collectorPrompts, rank, verifyDiscovery, type Candidate } from '../lib/discover';
+import { audit, collectorPrompts, describe, groupByDeal, rank, verifyDiscovery, type Candidate } from '../lib/discover';
 import { DEMO_PROFILE } from '../lib/demoProfile';
 import type { Evidence } from '../lib/types';
 
@@ -90,4 +90,32 @@ test('the independent audit passes a verified result and catches a tampered one'
   assert.deepEqual(audit(res, TODAY), []);
   const tampered = { candidates: [{ ...r.candidates[0], deals: [{ ...r.candidates[0].deals[0], quote: 'Fireside Ventures led a $90 million round in Millet Co' }] }], evidence: E } as never;
   assert.ok(audit(tampered, TODAY).some((p) => p.includes('quote not in source')));
+});
+
+const mkC = (firm: string, deals: Partial<Candidate['deals'][number]>[], partner: string | null = null): Candidate => ({ firm, partner, score: 1, label: 'possible', chequeNote: null, chequeQuote: null, reasons: [], deals: deals.map((d, i) => ({ company: `C${i}`, round: 'Seed', amount: null, date: '2026-09-20', quote: `${firm} backed C${i}`, evidenceId: 'E1', url: 'https://x.test/a', domain: 'x.test', title: 't', sectorMatch: true, stageMatch: true, dateSource: 'stated' as const, ...d })) });
+
+test('labels differ by what the deals show, and the sentence names the deal, when and why', () => {
+  const active = describe(mkC('A', [{ company: 'Anmasa', date: '2026-09-20' }, { company: 'Phab', date: '2026-08-01' }]), TODAY);
+  assert.equal(active.label, 'Active in your space'); assert.match(active.why, /2 deals in your category/); assert.match(active.why, /Anmasa/);
+  const closest = describe(mkC('B', [{ company: 'Anmasa (Hyperlocal staples)' }], 'Kanwaljit Singh'), TODAY);
+  assert.equal(closest.label, 'Closest match'); assert.match(closest.why, /Backed Anmasa \(Seed\) 3 weeks ago: your category, your stage\./); assert.match(closest.next, /Kanwaljit Singh/);
+  assert.equal(describe(mkC('C', [{ date: '2026-05-01' }]), TODAY).label, 'Right category');
+  assert.equal(describe(mkC('D', [{ sectorMatch: false }]), TODAY).label, 'Right stage');
+  const adj = describe(mkC('E', [{ sectorMatch: false, stageMatch: false }]), TODAY);
+  assert.equal(adj.label, 'Adjacent'); assert.match(adj.next, /Find out who led/);
+});
+
+test('one round with several investors becomes one card, closest matches first', () => {
+  const gs = groupByDeal([
+    mkC('Blume Ventures', [{ company: 'Anmasa', amount: null }]), mkC('Fireside Ventures', [{ company: 'Anmasa (hyperlocal)', amount: '$3.15 million' }, { company: 'Phab', sectorMatch: false, date: '2026-10-01' }]),
+    mkC('OTP Ventures', [{ company: 'Phab', sectorMatch: false, date: '2026-10-01' }]),
+  ], TODAY);
+  assert.equal(gs.length, 2);
+  assert.equal(gs[0].company, 'Anmasa'); assert.equal(gs[0].investors.length, 2); assert.equal(gs[0].amount, '$3.15 million');
+  assert.deepEqual(gs[1].investors.map((i) => i.firm).sort(), ['Fireside Ventures', 'OTP Ventures']);
+});
+
+test('a stated date beats an article date when firms disagree', () => {
+  const g = groupByDeal([mkC('A', [{ company: 'Z', date: '2026-10-05', dateSource: 'article' }]), mkC('B', [{ company: 'Z', date: '2026-09-01', dateSource: 'stated' }])], TODAY)[0];
+  assert.equal(g.date, '2026-09-01'); assert.equal(g.dateSource, 'stated');
 });

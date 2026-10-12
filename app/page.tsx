@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import BriefForm from '@/components/BriefForm';
 import BriefList from '@/components/BriefList';
+import StartHere from '@/components/StartHere';
 import { DEMO_PROFILE } from '@/lib/demoProfile';
 import { currentWorkspace, getProfile, listBriefs, listSeedBriefs } from '@/lib/store';
 
@@ -18,6 +19,7 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ n
         <h1 className="mt-2 text-4xl sm:text-5xl font-semibold leading-tight">Know who you are sitting across from. In about a minute.</h1>
         <p className="mt-4 text-lg text-muted">Enter an investor and their firm. PitchPrep reads the live web, quotes its sources, fact-checks every claim, and hands you recent deals, their stated thesis, what to watch for, and three talking points for your startup.</p>
       </section>
+      {mine.length === 0 && <StartHere />}
       <section className="mt-8 max-w-3xl">
         {sample && (
           <p className="mb-3 rounded-xl border border-line bg-blue-soft px-4 py-3 text-sm text-blue">

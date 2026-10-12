@@ -1,17 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { fmtDate } from '@/lib/format';
-import type { Candidate, DiscoveryResult } from '@/lib/discover';
+import { describe, groupByDeal, type Candidate, type DealGroup, type Described, type DiscoveryResult } from '@/lib/discover';
 import type { StageState } from '@/lib/types';
 
 interface Row { id: string; status: 'running' | 'complete' | 'failed'; focus: string | null; stages: StageState[]; result: DiscoveryResult | null; error: string | null; created_at: string }
 interface Prof { startup: string; oneLiner: string; sector: string; stage: string; geography: string; raise: string }
 
-const LABEL: Record<Candidate['label'], string> = { strong: 'Strong match', good: 'Good match', possible: 'Worth a look' };
-const STYLE: Record<Candidate['label'], string> = { strong: 'bg-brand-soft text-brand border-transparent', good: 'bg-blue-soft text-blue border-transparent', possible: 'bg-amber-soft text-amber border-transparent' };
+const STYLE: Record<Described['tone'], string> = { strong: 'bg-brand-soft text-brand border-transparent', good: 'bg-blue-soft text-blue border-transparent', possible: 'bg-amber-soft text-amber border-transparent' };
 
 export default function DiscoverPanel({ profile, initial }: { profile: Prof; initial: Row | null }) {
   const [row, setRow] = useState<Row | null>(initial);
@@ -113,37 +112,90 @@ function Progress({ row, elapsed }: { row: Row; elapsed: number }) {
 }
 
 function Results({ res }: { res: DiscoveryResult }) {
+  const [view, setView] = useState<'deal' | 'investor'>('deal');
+  const today = res.asOf.slice(0, 10);
+  const groups = useMemo(() => groupByDeal(res.candidates, today), [res, today]);
   return (
     <div>
       <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 className="text-xl font-semibold">{res.candidates.length ? `${res.candidates.length} investors with verified recent deals` : 'No investor could be verified'}</h2>
-        <p className="text-sm text-muted">Searched {fmtDate(res.asOf.slice(0, 10))} · deals since {fmtDate(res.windowStart)}</p>
+        <h2 className="text-xl font-semibold">{res.candidates.length ? `${res.candidates.length} investors across ${groups.length} recent rounds` : 'No investor could be verified'}</h2>
+        <p className="text-sm text-muted">Searched {fmtDate(today)} · deals since {fmtDate(res.windowStart)}</p>
       </div>
       {res.notes.map((n) => <p key={n} className="mt-2 rounded-lg bg-amber-soft px-3 py-2 text-sm text-amber">{n}</p>)}
-      <ul className="mt-4 space-y-4">{res.candidates.map((c) => <CandidateCard key={c.firm} c={c} />)}</ul>
-      <p className="mt-6 text-xs text-muted">Ranked by code: {res.stats.dealsKept} deals kept from {res.stats.dealsProposed} the model proposed, {res.stats.sources} sources read. A match means they recently backed something similar. It is not a prediction that they will back you. Always check a firm&apos;s current mandate before you write.</p>
+      {res.candidates.length > 0 && (
+        <div className="mt-4 inline-flex rounded-xl border border-line p-1" role="group" aria-label="How to group the results">
+          {([['deal', 'By round'], ['investor', 'By investor']] as const).map(([v, label]) => (
+            <button key={v} className={`rounded-lg px-3 py-1.5 text-sm font-medium ${view === v ? 'bg-brand text-brand-ink' : 'text-muted'}`} aria-pressed={view === v} onClick={() => setView(v)}>{label}</button>
+          ))}
+        </div>
+      )}
+      {view === 'deal'
+        ? <ul className="mt-4 space-y-4">{groups.map((g) => <DealCard key={g.key} g={g} />)}</ul>
+        : <ul className="mt-4 space-y-4">{res.candidates.map((c) => <CandidateCard key={c.firm} c={c} today={today} />)}</ul>}
+      <p className="mt-6 text-xs text-muted">Ordered by code: {res.stats.dealsKept} deals kept from {res.stats.dealsProposed} the model proposed, {res.stats.sources} sources read. Closest matches (your category and your stage, recently) come first. A match means they recently backed something similar. It is not a prediction that they will back you. Always check a firm&apos;s current mandate before you write.</p>
     </div>
   );
 }
 
-function CandidateCard({ c }: { c: Candidate }) {
+/** Person to meet + start a full brief. Shared by both views. */
+function ResearchBar({ firm, partner, id }: { firm: string; partner: string | null; id: string }) {
   const router = useRouter();
-  const [person, setPerson] = useState(c.partner ?? '');
-  const [open, setOpen] = useState(false);
+  const [person, setPerson] = useState(partner ?? '');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-
   async function research() {
     if (person.trim().length < 2) { setErr('Add the name of the person you will meet. A brief is about one person.'); return; }
     setBusy(true); setErr('');
     try {
-      const r = await fetch('/api/briefs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: person.trim(), firm: c.firm }) });
+      const r = await fetch('/api/briefs', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ name: person.trim(), firm }) });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? 'Something went wrong.');
       router.push(`/brief/${j.id}`);
     } catch (e) { setErr((e as Error).message); setBusy(false); }
   }
+  return (
+    <div>
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="grow min-w-[12rem]">
+          <label htmlFor={`p-${id}`} className="label">Who will you meet at {firm}?</label>
+          <input id={`p-${id}`} className="input mt-1" placeholder="Partner's name" value={person} onChange={(e) => setPerson(e.target.value)} maxLength={80} />
+        </div>
+        <button className="btn btn-primary" onClick={research} disabled={busy}>{busy ? 'Starting…' : 'Research this investor'}</button>
+      </div>
+      {err && <p role="alert" className="mt-2 text-sm text-red">{err}</p>}
+    </div>
+  );
+}
 
+function DealCard({ g }: { g: DealGroup }) {
+  return (
+    <li className="card p-5">
+      <div className="flex flex-wrap items-baseline justify-between gap-2">
+        <h3 className="text-lg font-semibold">{g.company}</h3>
+        <p className="text-sm text-muted">{[g.round, g.amount].filter(Boolean).join(', ')}{g.round || g.amount ? ' · ' : ''}{fmtDate(g.date)}{g.dateSource === 'article' ? ' (article date)' : ''}</p>
+      </div>
+      <p className="mt-1 text-sm text-muted">Sources: {g.sources.map((s, i) => <span key={s.url}>{i ? ', ' : ''}<a className="underline" href={s.url} target="_blank" rel="noopener noreferrer">{s.domain}<span className="sr-only"> (opens in a new tab)</span></a></span>)}</p>
+      <p className="label mt-4">{g.investors.length === 1 ? 'Backed by' : `Backed by ${g.investors.length} investors`}</p>
+      <ul className="mt-2 divide-y divide-line rounded-xl border border-line">
+        {g.investors.map((i) => (
+          <li key={i.firm} className="p-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="font-medium">{i.firm}{i.partner && <span className="font-normal text-muted"> · {i.partner}</span>}</p>
+              <span className={`chip ${STYLE[i.described.tone]}`}>{i.described.label}</span>
+            </div>
+            <p className="mt-1 text-sm text-muted">{i.described.why}</p>
+            <details className="mt-1 text-sm"><summary className="cursor-pointer underline text-muted">Exact quote</summary><blockquote className="mt-1 border-l-4 border-line pl-3 text-muted">&ldquo;{i.quote}&rdquo;</blockquote></details>
+            <details className="mt-2"><summary className="cursor-pointer text-sm font-medium text-brand underline">Research {i.firm}</summary><div className="mt-2"><ResearchBar firm={i.firm} partner={i.partner} id={`${g.key}-${i.firm}`} /></div></details>
+          </li>
+        ))}
+      </ul>
+    </li>
+  );
+}
+
+function CandidateCard({ c, today }: { c: Candidate; today: string }) {
+  const [open, setOpen] = useState(false);
+  const d = useMemo(() => describe(c, today), [c, today]);
   return (
     <li className="card p-5">
       <div className="flex flex-wrap items-start justify-between gap-2">
@@ -151,28 +203,22 @@ function CandidateCard({ c }: { c: Candidate }) {
           <h3 className="text-lg font-semibold">{c.firm}</h3>
           {c.partner && <p className="text-sm text-muted">Named on the deal: {c.partner}</p>}
         </div>
-        <span className={`chip ${STYLE[c.label]}`}>{LABEL[c.label]}</span>
+        <span className={`chip ${STYLE[d.tone]}`}>{d.label}</span>
       </div>
-      <p className="mt-2 text-sm text-muted">{c.reasons.join(' · ')}</p>
+      <p className="mt-2 text-sm">{d.why}</p>
+      <p className="text-sm text-muted">{d.next}</p>
       {c.chequeNote && <p className="mt-2 text-sm"><b>Cheque or focus:</b> {c.chequeNote} {c.chequeQuote && <span className="text-muted">(&ldquo;{c.chequeQuote}&rdquo;)</span>}</p>}
       <ul className="mt-3 space-y-2">
-        {c.deals.slice(0, open ? 20 : 2).map((d) => (
-          <li key={d.company + d.date} className="rounded-lg border border-line p-3 text-sm">
-            <p><b>{d.company}</b>{d.round ? `, ${d.round}` : ''}{d.amount ? `, ${d.amount}` : ''} <span className="text-muted">· {fmtDate(d.date)}{d.dateSource === 'article' ? ' (article date)' : ''}</span></p>
-            <blockquote className="mt-1 text-muted">&ldquo;{d.quote}&rdquo;</blockquote>
-            <a className="mt-1 inline-block underline" href={d.url} target="_blank" rel="noopener noreferrer">{d.domain}<span className="sr-only"> (opens in a new tab)</span></a>
+        {c.deals.slice(0, open ? 20 : 2).map((x) => (
+          <li key={x.company + x.date} className="rounded-lg border border-line p-3 text-sm">
+            <p><b>{x.company}</b>{x.round ? `, ${x.round}` : ''}{x.amount ? `, ${x.amount}` : ''} <span className="text-muted">· {fmtDate(x.date)}{x.dateSource === 'article' ? ' (article date)' : ''}</span></p>
+            <blockquote className="mt-1 text-muted">&ldquo;{x.quote}&rdquo;</blockquote>
+            <a className="mt-1 inline-block underline" href={x.url} target="_blank" rel="noopener noreferrer">{x.domain}<span className="sr-only"> (opens in a new tab)</span></a>
           </li>
         ))}
       </ul>
       {c.deals.length > 2 && <button className="mt-2 text-sm underline" onClick={() => setOpen(!open)}>{open ? 'Show fewer deals' : `Show all ${c.deals.length} deals`}</button>}
-      <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-line pt-3">
-        <div className="grow min-w-[12rem]">
-          <label htmlFor={`p-${c.firm}`} className="label">Who will you meet?</label>
-          <input id={`p-${c.firm}`} className="input mt-1" placeholder="Partner's name" value={person} onChange={(e) => setPerson(e.target.value)} maxLength={80} />
-        </div>
-        <button className="btn btn-primary" onClick={research} disabled={busy}>{busy ? 'Starting…' : 'Research this investor'}</button>
-      </div>
-      {err && <p role="alert" className="mt-2 text-sm text-red">{err}</p>}
+      <div className="mt-4 border-t border-line pt-3"><ResearchBar firm={c.firm} partner={c.partner} id={`c-${c.firm}`} /></div>
     </li>
   );
 }
