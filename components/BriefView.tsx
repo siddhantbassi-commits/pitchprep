@@ -17,6 +17,7 @@ export interface BriefData {
   isSeed: boolean;
   profile: FounderProfile | null;
   meetingAt: string | null;
+  delta?: { prevId: string; prevAt: string; newClaims: { id: string; section: string; kind: string; date: string | null; text: string }[] } | null;
 }
 
 export default function BriefView({ initial, token }: { initial: BriefData; token: string | null }) {
@@ -142,6 +143,22 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           <ul className="mt-2 list-disc pl-5 text-muted space-y-1">{result.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
           <p className="mt-3 text-sm">Nothing is shown rather than risk an unsupported statement. Check the spelling of the name and firm, or paste a link or bio under &quot;Add context&quot; and try again.</p>
         </div>
+      )}
+
+      {data.delta && (
+        <section className="mt-6 card p-5 border-brand" aria-labelledby="delta">
+          <h2 id="delta" className="text-lg font-semibold">What changed since your last brief ({fmtDate(data.delta.prevAt)})</h2>
+          {data.delta.newClaims.length === 0 ? (
+            <p className="mt-1 text-sm text-muted">Nothing new has been found in public sources since then.</p>
+          ) : (
+            <ul className="mt-2 space-y-2 text-sm">
+              {data.delta.newClaims.map((c) => (
+                <li key={c.id} className="flex gap-2"><span className="chip shrink-0">{KIND_LABEL[c.kind] ?? c.kind}</span><a className="underline" href={`#${c.id}`}>{c.text}</a></li>
+              ))}
+            </ul>
+          )}
+          <a className="mt-2 inline-block text-sm text-muted underline" href={`/brief/${data.delta.prevId}`}>Open the previous brief</a>
+        </section>
       )}
 
       {syn && (
