@@ -4,8 +4,8 @@ const steps = [
   ['1. Search the live web', 'Five Gemini Flash research calls run in parallel with Google Search grounding: new investments, exits and milestones, stated thesis, portfolio context and firm facts.'],
   ['2. Open the sources', 'We resolve every citation to the real article, fetch it ourselves (respecting robots.txt, blocking private addresses), and read the publication date from the page.'],
   ['3. Extract claims with quotes', 'Gemini Flash, with no search tools, turns the evidence into short claims. Each must carry a word-for-word quote and the source it came from.'],
-  ['4. Verify in code', 'The quote must appear in the source text, the source must be about this investor, deals must be dated inside the last 90 days, and duplicates are removed. A second Gemini pass fact-checks the survivors, and any claim it finds only partly supported is rewritten down to what the quote actually states.'],
-  ['5. Write talking points and questions', 'Only verified claims reach this step, together with your startup profile. Each talking point must cite the claims it builds on, and you also get questions to ask the investor.'],
+  ['4. Verify in code', 'The quote must appear in the source text, the source must be about this investor, deals must be dated inside the last 90 days, a stated view must name the investor or firm as the speaker, and duplicates are removed. A second Gemini pass fact-checks the survivors, and any claim it finds only partly supported is rewritten down to what the quote actually states.'],
+  ['5. Write talking points and questions', 'Only verified claims reach this step, together with your startup profile. Each talking point must cite the claims it builds on, and you also get questions to ask the investor. A last fidelity check compares every opener with the claims it cites and rewrites anything that stretches them.'],
   ['6. After the meeting', 'Your notes, pipeline status and a follow-up email draft stay with you. Code checks every figure in a draft or a practice answer against your own startup profile, so a slip is caught before an investor hears it.'],
 ];
 

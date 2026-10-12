@@ -18,14 +18,19 @@ Same prompt (the "new investments in the last 90 days" research call for Rajan A
 
 A single grounded Gemini Flash call can answer "give me a brief on this investor" and sounds convincing. Running the pipeline instead showed what that confidence hides. From the live evaluation (`docs/eval-report.md`), claims that the model produced and the checks removed or corrected:
 
-Counts are for the six real investors, from the first evaluation run (before the judge fix) and from the latest run (everything shipped); live search varies, so the numbers differ slightly between runs:
+Counts are for the six real investors across three evaluation runs: the first (before the judge fix), a middle run, and the latest (everything shipped). Live search varies, so numbers differ between runs; what matters is that the same kinds of problem recur and the gate removes them.
 
-- **Quotes that were not in the source** were produced and removed by the gate: 3 in the first run, 1 in the second, 0 reaching the display in the latest (the independent re-audit finds none).
-- **Deals outside the 90-day window** were produced and removed: 5, then 8, then 7, e.g. a Chime IPO from June 2025 and a June 2026 round, presented next to current news.
-- **Sources that were not about the investor** were removed: 3, then 0, then 1.
-- **Deals with no date anywhere** were held back as "date unconfirmed" instead of being presented as recent: 3, then 5, then 6. One was a reported Oura stake sale by Forerunner, which may be real and current but could not be dated.
-- **Claims the fact-check found unsupported** were dropped: 3, then 2 in the later runs.
-- **Mislabelled event type:** an IPO *filing* by a portfolio company was labelled an "exit"; fixed with a separate "milestone" category. A partner promotion was labelled "pulling back"; fixed with a "team change" category.
+| What the model produced | First run | Middle | Latest |
+|---|---|---|---|
+| Quotes not found in the source (removed by the gate) | 3 | 1 | 3 |
+| Deals outside the 90-day window (removed), e.g. a Chime IPO from June 2025 | 5 | 8 | 9 |
+| Stated views older than 24 months (removed) | 4 | 3 | 9 |
+| Deals with no date anywhere (held back as "date unconfirmed") | 3 | 5 | 3 |
+| Sources that were not about the investor (removed) | 3 | 0 | 1 |
+| Stated views that do not name the investor or firm (removed, rule added later) | n/a | n/a | 1 |
+| Claims shown that fail an independent re-audit of quote, source or date | 0 | 0 | 0 |
+
+Two labelling errors were also fixed by category, not removal: an IPO *filing* labelled an "exit" (now "milestone"), and a partner promotion labelled "pulling back" (now "team change").
 
 ### The independent spot-check, and the bug it found
 After the first evaluation I checked 12 sampled claims against the live pages myself. Six could be opened by an ordinary fetch: four were fully right (including dates), and **two carried invented detail even though their quote was real**:

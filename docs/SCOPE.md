@@ -9,8 +9,8 @@ Priya -> name + firm -> `POST /api/briefs` -> job row in Supabase -> background 
 1. **Collect**: five Gemini Flash calls in parallel with Google Search grounding (new investments, exits and milestones, thesis, context, firm facts).
 2. **Sources**: resolve each citation redirect to the real URL, fetch the page (robots.txt respected, private addresses blocked), read publication date and text; add the firm's own site.
 3. **Extract**: Gemini Flash with no tools turns the evidence into claims, each with a word-for-word quote.
-4. **Verify**: code checks quote-in-source, source-about-investor, date window, duplicates; a Gemini fact-check pass then judges the survivors, and any claim it finds only partly supported is **rewritten down to what the quote actually states** (or dropped).
-5. **Synthesise**: Gemini Flash writes the skim, fit snapshot, exactly three talking points (each citing verified claims) and likely questions, using Priya's startup profile.
+4. **Verify**: code checks quote-in-source, source-about-investor, date window, a named speaker for every stated view, duplicates; a Gemini fact-check pass then judges the survivors, and any claim it finds only partly supported is **rewritten down to what the quote actually states** (or dropped).
+5. **Synthesise**: Gemini Flash writes the skim, fit snapshot, exactly three talking points (each citing verified claims), likely questions and questions to ask the investor, using Priya's startup profile. A **fidelity check** (a second Flash pass) then compares every opener and angle with the claims it cites and rewrites anything that widens them or attributes words to the wrong person.
 6. **Persist and render**: brief, claims, sources, cost and latency saved; the page polls progress every 1.5 seconds.
 
 ## Decisions
