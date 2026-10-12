@@ -1,5 +1,5 @@
 // Creates (or finds) the Supabase project, applies supabase/schema.sql, and writes the keys into .env.local.
-// Usage: npm run db:setup            -> inspect only (lists orgs and projects, changes nothing)
+// 
 //        npm run db:setup -- --create -> create the project if missing, then apply schema
 import { readFileSync, writeFileSync } from 'node:fs';
 import { randomBytes } from 'node:crypto';
@@ -23,10 +23,11 @@ const projects = await call('/projects');
 console.log('ORGS', orgs.map((o: any) => ({ id: o.id, name: o.name, slug: o.slug })));
 console.log('PROJECTS', projects.map((p: any) => ({ ref: p.id ?? p.ref, name: p.name, region: p.region, status: p.status, org: p.organization_slug ?? p.organization_id })));
 
-let project = projects.find((p: any) => p.name === NAME);
+const refArg = process.argv.find((a) => a.startsWith('--ref='))?.slice(6);
+let project = refArg ? { id: refArg } : projects.find((p: any) => p.name === NAME);
 if (!project) {
   if (!create) { console.log(`\nNo project named "${NAME}" yet. Re-run with --create to make one.`); process.exit(0); }
-  const org = orgs[0];
+  const org = orgs[0] ?? { id: projects[0]?.organization_id, name: projects[0]?.organization_slug };
   console.log(`Creating project "${NAME}" in org ${org.name} (ap-south-1)...`);
   project = await call('/projects', {
     method: 'POST',

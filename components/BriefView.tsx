@@ -171,10 +171,12 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
                       <blockquote className="mt-3 border-l-4 border-brand pl-3 italic">&ldquo;{t.opener}&rdquo;</blockquote>
                       <p className="mt-3 text-sm text-muted"><span className="font-semibold text-ink">Uses from your startup:</span> {t.tailoredTo}</p>
                       <div className="mt-2 text-sm text-muted">
-                        <span className="font-semibold text-ink">Built on:</span>{' '}
-                        {t.claimIds.map((id) => claimById.get(id)).filter((c): c is Claim => !!c).map((c) => (
-                          <span key={c.id} className="inline-block mr-2"><a className="underline" href={`#${c.id}`}>{c.text.length > 80 ? c.text.slice(0, 77) + '...' : c.text}</a></span>
-                        ))}
+                        <span className="font-semibold text-ink">Built on:</span>
+                        <ul className="mt-1 space-y-1">
+                          {t.claimIds.map((id) => claimById.get(id)).filter((c): c is Claim => !!c).map((c) => (
+                            <li key={c.id} className="flex gap-2"><span aria-hidden>&rarr;</span><a className="underline" href={`#${c.id}`}>{c.text}</a></li>
+                          ))}
+                        </ul>
                       </div>
                     </div>
                   </div>

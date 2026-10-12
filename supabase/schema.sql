@@ -127,10 +127,8 @@ alter table feedback enable row level security;
 alter table events enable row level security;
 alter table rate_limits enable row level security;
 
--- Explicit grants (new Supabase projects do not auto-expose the public schema).
+-- Explicit grants, scoped to PitchPrep's own tables only (this project is shared with other apps; their grants are not touched).
 grant usage on schema public to service_role;
-grant all on all tables in schema public to service_role;
-grant all on all sequences in schema public to service_role;
-grant execute on all functions in schema public to service_role;
-alter default privileges in schema public grant all on tables to service_role;
-alter default privileges in schema public grant all on sequences to service_role;
+grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits to service_role;
+grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq to service_role;
+grant execute on function bump_rate(text, timestamptz) to service_role;
