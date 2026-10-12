@@ -24,7 +24,7 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 32 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser) |
+| `npm test` | 40 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout) |
 | `npm run seed` | Generate the example briefs shown on the home page (live data) |
 | `npm run cal-test -- file.ics` | Test investor-meeting detection on a calendar file |
 | `npm run run -- "Name" "Firm"` | Run the whole pipeline in the terminal, no database needed |
@@ -35,7 +35,12 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 `GEMINI_API_KEY`, `GEMINI_MODEL` (default `gemini-3.8-flash`), `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET`. The service key is used only on the server; browsers never talk to the database.
 
 ## Beyond the brief
-Founder profile for tailored talking points · every claim cited with exact quote and date · "what we left out and why" · 6-hour cache and "what changed since last time" · share link, copy text, PDF · **calendar link that finds investor meetings and prepares briefs automatically** · ops dashboard with cost per brief · per-claim feedback · real data deletion · prompt-injection, SSRF and rate-limit protections · keep-alive and health checks.
+Not just a brief: the whole fundraising workflow around it.
+- **Before:** founder profile, cited and quoted claims, fit snapshot, questions to ask *them*, phone-friendly **meeting card**, **calendar link** that finds investor meetings and prepares briefs automatically (try it with a sample calendar), compared-with-last-time panel.
+- **After:** investor **pipeline** ranked by fit with status, next step and notes; **follow-up email draft** from her notes; **answer rehearsal** where code checks every figure against her profile.
+- **Trust:** per-claim feedback, ops dashboard with cost per brief, in-product [Evidence page](https://pitchprep-three.vercel.app/evidence), real data deletion, injection / SSRF / rate-limit protections, accessibility, dark mode, installable on a phone.
+
+New here? Follow the [three-minute tour](docs/tour.md).
 
 ## What it deliberately does not do
 No LinkedIn scraping, nothing personal about anyone, no predictions, no contacting investors, no claim without a quote from its source.

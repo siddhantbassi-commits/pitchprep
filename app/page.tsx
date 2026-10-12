@@ -1,12 +1,15 @@
+import Link from 'next/link';
 import BriefForm from '@/components/BriefForm';
 import BriefList from '@/components/BriefList';
-import { currentWorkspace, listBriefs, listSeedBriefs } from '@/lib/store';
+import { DEMO_PROFILE } from '@/lib/demoProfile';
+import { currentWorkspace, getProfile, listBriefs, listSeedBriefs } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const ws = await currentWorkspace().catch(() => null);
-  const [mine, examples] = await Promise.all([ws ? listBriefs(ws, 5).catch(() => []) : [], listSeedBriefs().catch(() => [])]);
+  const [mine, examples, profile] = await Promise.all([ws ? listBriefs(ws, 5).catch(() => []) : [], listSeedBriefs().catch(() => []), ws ? getProfile(ws).catch(() => DEMO_PROFILE) : DEMO_PROFILE]);
+  const sample = profile.startup === DEMO_PROFILE.startup;
   return (
     <div>
       <section className="max-w-3xl">
@@ -14,7 +17,14 @@ export default async function Home() {
         <h1 className="mt-2 text-4xl sm:text-5xl font-semibold leading-tight">Know who you are sitting across from. In about a minute.</h1>
         <p className="mt-4 text-lg text-muted">Enter an investor and their firm. PitchPrep reads the live web, quotes its sources, fact-checks every claim, and hands you recent deals, their stated thesis, what to watch for, and three talking points for your startup.</p>
       </section>
-      <section className="mt-8 max-w-3xl"><BriefForm /></section>
+      <section className="mt-8 max-w-3xl">
+        {sample && (
+          <p className="mb-3 rounded-xl border border-line bg-blue-soft px-4 py-3 text-sm text-blue">
+            Briefs are tailored to a sample founder, <strong>{DEMO_PROFILE.founderName} of {DEMO_PROFILE.startup}</strong>, so you can try everything straight away. <Link className="underline font-medium" href="/settings">Use your own startup</Link> for briefs that are yours.
+          </p>
+        )}
+        <BriefForm />
+      </section>
 
       <section className="mt-12 grid gap-4 sm:grid-cols-3" aria-label="Why you can trust it">
         {[

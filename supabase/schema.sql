@@ -150,6 +150,24 @@ create index if not exists meetings_ws_idx on meetings (workspace_id, starts_at)
 alter table calendar_feeds enable row level security;
 alter table meetings enable row level security;
 
+
+-- Pipeline: where each investor stands, plus the founder's own notes and next step.
+create table if not exists investor_notes (
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  investor_key text not null,                -- same key as briefs.investor_key
+  investor_name text not null,
+  firm text not null,
+  status text not null default 'researching'
+    check (status in ('researching','booked','met','followed_up','in_talks','passed')),
+  notes text not null default '',
+  next_step text not null default '',
+  next_step_on date,
+  updated_at timestamptz not null default now(),
+  primary key (workspace_id, investor_key)
+);
+
+alter table investor_notes enable row level security;
+
 alter table workspaces enable row level security;
 alter table founder_profiles enable row level security;
 alter table briefs enable row level security;
@@ -161,6 +179,6 @@ alter table rate_limits enable row level security;
 
 -- Explicit grants, scoped to PitchPrep's own tables only (this project is shared with other apps; their grants are not touched).
 grant usage on schema public to service_role;
-grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings to service_role;
+grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings, investor_notes to service_role;
 grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq to service_role;
 grant execute on function bump_rate(text, timestamptz) to service_role;

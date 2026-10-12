@@ -42,3 +42,15 @@ test('only https calendar links are accepted', () => {
   assert.equal(isIcsUrl('http://example.com/cal.ics'), false);
   assert.equal(isIcsUrl('file:///etc/passwd'), false);
 });
+
+import { demoIcs } from '../lib/demoCalendar';
+
+test('sample calendar: events are in the future and 11:00 IST really is 05:30 UTC', () => {
+  const now = new Date('2026-10-12T08:00:00Z');
+  const ev = parseIcs(demoIcs(now));
+  assert.equal(ev.length, 5);
+  assert.ok(ev.every((e) => Date.parse(e.startsAt) > now.getTime()));
+  assert.equal(ev[0].startsAt, '2026-10-13T05:30:00.000Z'); // Forerunner call, tomorrow 11:00 IST
+  const own = ownDomainsFrom(ev);
+  assert.equal(externalAttendees(ev[0], own)[0].email, 'kirsten@forerunnerventures.com');
+});

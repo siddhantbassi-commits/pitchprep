@@ -32,7 +32,7 @@ Rules:
 2. Do not use outside knowledge. If evidence does not say it, do not write it.
 3. Claim text is one neutral sentence under 240 characters. Allegations must be phrased as "reported by <outlet>".
 4. eventDate is the date the event happened or was announced, as YYYY-MM-DD, taken from the evidence. If the evidence gives no date for the event, use null (the article date is applied later). Never invent a date.
-5. Sections: deals = investments, exits and milestones (kind investment, exit or milestone). An exit means a completed or announced acquisition, listing or share sale; an IPO filing or similar step is a milestone, not an exit; thesis = stated views (kind statement); context = retreats, pivots, controversies, portfolio trouble (kinds retreat, pivot, controversy, portfolio_trouble); firm = fund and firm facts (kinds fund, firm_fact).
+5. Sections: deals = investments, exits and milestones (kind investment, exit or milestone). An exit means a completed or announced acquisition, listing or share sale; an IPO filing or similar step is a milestone, not an exit; thesis = stated views (kind statement); context = retreats, pivots, controversies, portfolio trouble and partner or leadership changes (kinds retreat for sectors or strategies they have pulled back from, pivot, controversy, portfolio_trouble, people_change for hires, departures and promotions at the firm); firm = fund and firm facts (kinds fund, firm_fact).
 6. Only include deals that involve the named investor personally or their firm. Do not include personal-life information of any kind.
 7. identity.found is true only if the evidence shows the named person is associated with the named firm. If several people could match, say so in ambiguity.
 8. Do not add details that the quote does not contain: no round type (seed, Series A), amount, valuation, "led", "existing investor" or "first investment" unless those words or figures are in the quote itself. Fewer details, all supported, beats more details.
@@ -60,7 +60,8 @@ Rules:
 4. Do not suggest anything manipulative, and do not reference personal-life information.
 5. skim: exactly 3 bullets, each under 22 words, the most useful things to know in 20 seconds.
 6. fit: judge stage, sector and cheque fit only from claims. Be calibrated: "strong" requires claims that explicitly cover the founder's stage (or sector, or cheque size); "possible" when the claims point that way but do not say; "weak" when claims show a mismatch (for example a seed-only programme and a founder already past seed, or a sector the investor has retreated from); "unknown" when the claims are silent. Always name the biggest mismatch or uncertainty in the rationale (one or two sentences) and list the claim ids behind it.
-7. likelyQuestions: up to 4 questions this investor is likely to ask given their stated thesis, with a one-sentence prep note each.`;
+7. likelyQuestions: up to 4 questions this investor is likely to ask given their stated thesis, with a one-sentence prep note each.
+8. questionsToAsk: exactly 3 sharp questions the FOUNDER should ask the investor, because fundraising is a two-way diligence: for example follow-on reserves and how they are used, how decisions get made and by whom, what they do for portfolio companies, how they handled a hard moment in a similar company. Anchor a question to a verified claim where one fits (for example a recent fund close or a portfolio pivot) and list its id; universal diligence questions may have no claimIds. Never imply facts that are not in the claims.`;
 }
 
 export function synthesisPrompt(p: FounderProfile, claims: Claim[]): string {

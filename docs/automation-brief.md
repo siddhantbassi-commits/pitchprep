@@ -25,3 +25,5 @@
 4. Every line links to its source with the exact quote and date. Anything that could not be verified is left out and listed, with the reason.
 5. She reads it on her phone or saves a PDF, decides which angle to use and walks in prepared.
 6. If a claim looks wrong she taps "Wrong?", which feeds the evaluation set.
+7. Before the meeting she opens the phone-sized meeting card; if her calendar is connected the brief was already waiting.
+8. After it she saves notes and a status in her pipeline, drafts a follow-up email from them (checked against her own numbers), edits it and sends it herself, and practises the hard questions before the next investor.

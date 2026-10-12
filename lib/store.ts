@@ -186,3 +186,85 @@ export async function loadDelta(row: BriefRow, isOwner: boolean): Promise<Delta 
   if (!prev?.result || Date.parse(prev.created_at) >= Date.parse(row.created_at)) return null;
   return computeDelta(row.result, prev);
 }
+
+// ---------------------------------------------------------------- pipeline
+
+import type { Fit, Status } from './tracker';
+
+export interface NoteRow {
+  investor_key: string; investor_name: string; firm: string; status: Status; notes: string; next_step: string; next_step_on: string | null; updated_at: string;
+}
+
+export async function getNote(ws: string, key: string): Promise<NoteRow | null> {
+  const r = await db().from('investor_notes').select('*').eq('workspace_id', ws).eq('investor_key', key).maybeSingle();
+  return (r.data as NoteRow | null) ?? null;
+}
+
+export async function upsertNote(ws: string, a: { name: string; firm: string; status?: Status; notes?: string; nextStep?: string; nextStepOn?: string | null }) {
+  const key = investorKey(a.name, a.firm);
+  const existing = await getNote(ws, key);
+  const row = {
+    workspace_id: ws, investor_key: key, investor_name: a.name, firm: a.firm,
+    status: a.status ?? existing?.status ?? 'researching',
+    notes: a.notes ?? existing?.notes ?? '',
+    next_step: a.nextStep ?? existing?.next_step ?? '',
+    next_step_on: a.nextStepOn === undefined ? existing?.next_step_on ?? null : a.nextStepOn,
+    updated_at: new Date().toISOString(),
+  };
+  must(await db().from('investor_notes').upsert(row), 'upsertNote');
+  return row;
+}
+
+export interface PipelineItem {
+  key: string; name: string; firm: string; briefId: string; briefAt: string; briefStatus: string; confidence: string | null;
+  status: Status; notes: string; nextStep: string; nextStepOn: string | null; fit: Fit | null; lastDeal: { date: string; text: string } | null;
+}
+
+/** Latest brief per investor in this workspace, joined with the founder's own status and notes. */
+export async function listPipeline(ws: string): Promise<PipelineItem[]> {
+  const rows = (must(
+    await db().from('briefs').select('id,investor_key,investor_name,firm,status,confidence,created_at,fit:result->synthesis->fit')
+      .eq('workspace_id', ws).eq('is_seed', false).in('status', ['complete', 'partial', 'unverified']).order('created_at', { ascending: false }).limit(300),
+    'pipeline briefs',
+  ) ?? []) as unknown as { id: string; investor_key: string; investor_name: string; firm: string; status: string; confidence: string | null; created_at: string; fit: Fit | null }[];
+  const latest = new Map<string, (typeof rows)[number]>();
+  for (const r of rows) if (!latest.has(r.investor_key)) latest.set(r.investor_key, r);
+  if (!latest.size) return [];
+  const notes = new Map(((await db().from('investor_notes').select('*').eq('workspace_id', ws)).data ?? []).map((n) => [n.investor_key as string, n as NoteRow]));
+  const ids = [...latest.values()].map((r) => r.id);
+  const claims = ((await db().from('claims').select('brief_id,text,event_date').in('brief_id', ids).eq('section', 'deals').eq('verified', true).not('event_date', 'is', null).order('event_date', { ascending: false })).data ?? []) as { brief_id: string; text: string; event_date: string }[];
+  const deal = new Map<string, { date: string; text: string }>();
+  for (const c of claims) if (!deal.has(c.brief_id)) deal.set(c.brief_id, { date: c.event_date, text: c.text });
+  return [...latest.values()].map((r) => {
+    const n = notes.get(r.investor_key);
+    return {
+      key: r.investor_key, name: r.investor_name, firm: r.firm, briefId: r.id, briefAt: r.created_at, briefStatus: r.status, confidence: r.confidence,
+      status: n?.status ?? 'researching', notes: n?.notes ?? '', nextStep: n?.next_step ?? '', nextStepOn: n?.next_step_on ?? null, fit: r.fit, lastDeal: deal.get(r.id) ?? null,
+    };
+  });
+}
+
+export async function deleteBrief(id: string, ws: string): Promise<boolean> {
+  const r = await db().from('briefs').delete().eq('id', id).eq('workspace_id', ws).select('id');
+  return !!r.data?.length;
+}
+
+/** Copies a public example brief into the viewer's own workspace so they can track it, take notes and draft follow-ups. */
+export async function adoptBrief(id: string, ws: string): Promise<string | null> {
+  const src = (await db().from('briefs').select('*').eq('id', id).eq('is_seed', true).maybeSingle()).data as (BriefRow & { investor_key: string }) | null;
+  if (!src?.result) return null;
+  const copy = must(
+    await db().from('briefs').insert({
+      workspace_id: ws, investor_name: src.investor_name, firm: src.firm, investor_key: src.investor_key, status: src.status, result: src.result,
+      profile_snapshot: src.profile_snapshot, parent_brief_id: src.id, is_seed: false, latency_ms: src.latency_ms, cost_usd: 0, confidence: src.confidence,
+      claims_verified: (src as any).claims_verified, claims_dropped: (src as any).claims_dropped, sources: (src as any).sources, completed_at: src.completed_at,
+    }).select('id').single(),
+    'adopt',
+  );
+  const newId = copy!.id as string;
+  const claims = (await db().from('claims').select('claim_id,section,kind,text,event_date,verified,drop_reason,judge,evidence_ids,quote,severity').eq('brief_id', id)).data ?? [];
+  if (claims.length) await db().from('claims').insert(claims.map((c) => ({ ...c, brief_id: newId })));
+  const ev = (await db().from('evidence').select('evidence_id,url,domain,title,published_at,tier,full_fetch,origin').eq('brief_id', id)).data ?? [];
+  if (ev.length) await db().from('evidence').insert(ev.map((e) => ({ ...e, brief_id: newId })));
+  return newId;
+}

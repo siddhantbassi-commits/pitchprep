@@ -2,7 +2,7 @@ import type { Claim, Confidence } from './types';
 
 export const KIND_LABEL: Record<string, string> = {
   investment: 'New investment', exit: 'Exit', milestone: 'Portfolio milestone', statement: 'Said', retreat: 'Pulling back', pivot: 'Pivot',
-  controversy: 'Reported controversy', portfolio_trouble: 'Portfolio trouble', fund: 'Fund', firm_fact: 'Firm fact',
+  controversy: 'Reported controversy', portfolio_trouble: 'Portfolio trouble', people_change: 'Team change', fund: 'Fund', firm_fact: 'Firm fact',
 };
 
 export const DROP_LABEL: Record<string, string> = {
@@ -20,15 +20,27 @@ export const DROP_LABEL: Record<string, string> = {
 
 export const CONF_LABEL: Record<Confidence, string> = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence', none: 'Nothing found' };
 
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// Dates are formatted by hand, not with Intl: server and browser ICU data differ ("Sep" vs "Sept"), which breaks hydration.
 export function fmtDate(iso: string | null | undefined): string {
   if (!iso) return 'Date not stated';
   const d = new Date(`${iso.slice(0, 10)}T00:00:00Z`);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  if (Number.isNaN(d.getTime())) return 'Date not stated';
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}`;
 }
 
-// Always India time, so the server render and the browser render agree (no hydration mismatch) and the label is explicit.
+// Always India time (UTC+5:30) with an explicit label, so everyone sees the same thing.
 export function fmtDateTime(iso: string): string {
-  return `${new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' })} IST`;
+  const d = new Date(Date.parse(iso) + 5.5 * 3600_000);
+  return `${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} IST`;
+}
+
+export function fmtDayTime(iso: string): string {
+  const d = new Date(Date.parse(iso) + 5.5 * 3600_000);
+  return `${WEEKDAYS[d.getUTCDay()]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()]}, ${pad(d.getUTCHours())}:${pad(d.getUTCMinutes())} IST`;
 }
 
 export function fmtSecs(ms: number | null | undefined): string {

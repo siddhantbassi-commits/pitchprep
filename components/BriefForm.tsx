@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 
 const EXAMPLES = [
@@ -18,6 +18,17 @@ export default function BriefForm() {
   const [meeting, setMeeting] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
+  const nameRef = useRef<HTMLInputElement>(null);
+
+  // Press / anywhere to start typing an investor's name.
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (e.key === '/' && !/input|textarea|select/i.test(t.tagName) && !t.isContentEditable) { e.preventDefault(); nameRef.current?.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, []);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -41,7 +52,7 @@ export default function BriefForm() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="name" className="label">Investor name</label>
-          <input id="name" className="input mt-1" placeholder="e.g. Kirsten Green" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="off" />
+          <input id="name" ref={nameRef} className="input mt-1" placeholder="e.g. Kirsten Green" value={name} onChange={(e) => setName(e.target.value)} required minLength={2} maxLength={80} autoComplete="off" />
         </div>
         <div>
           <label htmlFor="firm" className="label">Firm</label>
@@ -64,7 +75,7 @@ export default function BriefForm() {
       {error && <p id="form-error" role="alert" className="mt-3 text-sm text-red">{error}</p>}
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <button className="btn btn-primary" disabled={busy || name.trim().length < 2 || firm.trim().length < 2}>{busy ? 'Starting…' : 'Generate brief'}</button>
-        <span className="text-sm text-muted">Ready in about a minute.</span>
+        <span className="text-sm text-muted">Ready in about a minute. Tip: press <kbd className="rounded border border-line bg-surface px-1.5 text-xs">/</kbd> to start typing.</span>
       </div>
       <div className="mt-5 border-t border-line pt-4">
         <p className="label">Try one</p>

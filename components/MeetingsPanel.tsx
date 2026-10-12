@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { fmtDayTime } from '@/lib/format';
 
 interface Meeting {
   id: string; starts_at: string; title: string | null; attendees: { name: string | null; email: string }[];
@@ -10,7 +11,7 @@ interface Meeting {
 }
 interface State { connected: boolean; feed: { auto_prepare: boolean; last_synced_at: string | null; last_error: string | null } | null; meetings: Meeting[] }
 
-const when = (iso: string) => new Date(iso).toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+const when = fmtDayTime;
 
 export default function MeetingsPanel() {
   const [s, setS] = useState<State | null>(null);
@@ -30,6 +31,13 @@ export default function MeetingsPanel() {
     const r = await fetch('/api/meetings/feed', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ url, auto }) });
     const j = await r.json();
     if (!r.ok) setError(j.error ?? 'Could not connect.'); else { setUrl(''); if (j.error) setError(j.error); }
+    setBusy(''); load();
+  }
+  async function sample() {
+    setBusy('sample'); setError('');
+    const r = await fetch('/api/meetings/feed', { method: 'PUT', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ sample: true, auto }) });
+    const j = await r.json();
+    if (!r.ok) setError(j.error ?? 'Could not load the sample calendar.');
     setBusy(''); load();
   }
   async function sync() { setBusy('sync'); setError(''); const r = await fetch('/api/meetings/sync', { method: 'POST' }); const j = await r.json(); if (j.error) setError(j.error); setBusy(''); load(); }
@@ -52,6 +60,10 @@ export default function MeetingsPanel() {
         <label className="mt-3 flex items-start gap-2 text-sm"><input type="checkbox" className="mt-1" checked={auto} onChange={(e) => setAuto(e.target.checked)} /><span>Prepare briefs automatically about 24 hours before each investor meeting</span></label>
         {error && <p role="alert" className="mt-3 text-sm text-red">{error}</p>}
         <button className="btn btn-primary mt-4" disabled={busy === 'connect' || url.length < 10}>{busy === 'connect' ? 'Reading your calendar…' : 'Connect calendar'}</button>
+        <div className="mt-4 border-t border-line pt-4">
+          <p className="text-sm text-muted">Just exploring? Use a sample calendar with a few fictional meetings (two investors, a customer and a job candidate) to see detection and automatic briefs work.</p>
+          <button type="button" className="btn mt-2" onClick={sample} disabled={busy === 'sample'}>{busy === 'sample' ? 'Loading sample…' : 'Try with a sample calendar'}</button>
+        </div>
         <p className="mt-4 text-xs text-muted">Privacy: only meeting titles, times, attendee names and email domains are sent to Gemini, to decide which meetings involve investors. Descriptions, notes and full email addresses are not. Recurring events are ignored. You can disconnect and erase everything at any time.</p>
       </form>
     );

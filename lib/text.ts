@@ -132,3 +132,24 @@ export function addDays(iso: string, n: number): string {
   d.setUTCDate(d.getUTCDate() + n);
   return isoDay(d);
 }
+
+const NUM = /(?:rs\.?\s?|₹\s?|\$\s?|usd\s?|inr\s?)?\d[\d,]*(?:\.\d+)?\s?(?:%|x\b|cr\b|crore\b|lakh\b|m\b|mn\b|million\b|bn\b|billion\b|k\b)?/gi;
+
+/** Numbers worth checking in free text: anything with a unit or currency, or two or more digits. Returned as plain numeric strings. */
+export function significantNumbers(text: string): string[] {
+  const out = new Set<string>();
+  for (const m of text.matchAll(NUM)) {
+    const raw = m[0].trim();
+    const digits = raw.match(/\d[\d,]*(?:\.\d+)?/)?.[0].replace(/,/g, '') ?? '';
+    if (!digits) continue;
+    const hasUnit = /[%$₹x]|cr|crore|lakh|m$|mn|million|bn|billion|k$|rs|usd|inr/i.test(raw);
+    if (hasUnit || digits.replace('.', '').length >= 2) out.add(String(parseFloat(digits)));
+  }
+  return [...out];
+}
+
+/** Numbers in `text` that appear in none of the reference texts. Used to flag figures that do not match what the founder has on record. */
+export function unknownNumbers(text: string, references: string[]): string[] {
+  const known = new Set(references.flatMap((r) => significantNumbers(r)));
+  return significantNumbers(text).filter((n) => !known.has(n));
+}

@@ -3,6 +3,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import type { BriefResult, Claim, Confidence, Evidence, FounderProfile, Section, StageState } from '@/lib/types';
+import AfterMeeting from './AfterMeeting';
+import MeetingCard from './MeetingCard';
+import Rehearse from './Rehearse';
+import { DEMO_PROFILE } from '@/lib/demoProfile';
 import { CONF_LABEL, DROP_LABEL, KIND_LABEL, claimDate, fmtDate, fmtDateTime, fmtSecs } from '@/lib/format';
 
 export interface BriefData {
@@ -95,6 +99,9 @@ const CONF_STYLE: Record<Confidence, string> = {
 
 function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefResult; onRegenerate: () => void }) {
   const [copied, setCopied] = useState('');
+  const [card, setCard] = useState(false);
+  const [adopting, setAdopting] = useState(false);
+  const router = useRouter();
   const verified = useMemo(() => result.claims.filter((c) => c.verified), [result]);
   const evById = useMemo(() => new Map(result.evidence.map((e) => [e.id, e])), [result]);
   const bySection = (s: Section) => verified.filter((c) => c.section === s).sort((a, b) => (b.eventDate ?? '').localeCompare(a.eventDate ?? ''));
@@ -105,14 +112,30 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
 
   const flash = (m: string) => { setCopied(m); setTimeout(() => setCopied(''), 2000); };
   const copyText = async () => {
-    await navigator.clipboard.writeText(toPlainText(result, verified, evById));
-    flash('Brief copied');
+    await copyToClipboard(toPlainText(result, verified, evById), 'Brief copied');
+  };
+  const copyToClipboard = async (text: string, msg: string) => {
+    try { await navigator.clipboard.writeText(text); flash(msg); } catch { flash('Could not copy automatically. Copy the address from the browser bar.'); }
   };
   const share = async () => {
+    if (data.isSeed) return copyToClipboard(location.href, 'Link copied');
     const r = await fetch(`/api/briefs/${data.id}`, { method: 'POST' });
     const j = await r.json();
-    if (r.ok) { await navigator.clipboard.writeText(`${location.origin}${j.path}`); flash('Share link copied'); }
+    if (r.ok) await copyToClipboard(`${location.origin}${j.path}`, 'Share link copied');
   };
+  const adopt = async () => {
+    setAdopting(true);
+    const r = await fetch(`/api/briefs/${data.id}/adopt`, { method: 'POST' });
+    const j = await r.json().catch(() => ({}));
+    if (r.ok) router.push(`/brief/${j.id}`); else { flash(j.error ?? 'Could not add it.'); setAdopting(false); }
+  };
+  const remove = async () => {
+    if (!confirm(`Delete this brief on ${result.investor.name}? Your notes for this investor are kept.`)) return;
+    const r = await fetch(`/api/briefs/${data.id}`, { method: 'DELETE' });
+    if (r.ok) { router.push('/briefs'); router.refresh(); } else flash('Could not delete it.');
+  };
+  const canAssist = data.isOwner || data.isSeed;
+  const sample = data.isOwner && data.profile?.startup === DEMO_PROFILE.startup;
 
   return (
     <article>
@@ -126,9 +149,10 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           </p>
         </div>
         <div className="no-print flex flex-wrap gap-2">
+          {result.synthesis && <button className="btn btn-primary" onClick={() => setCard(true)}>Meeting card</button>}
           <button className="btn" onClick={copyText}>Copy text</button>
           <button className="btn" onClick={() => window.print()}>Save as PDF</button>
-          {data.isOwner && <button className="btn" onClick={share}>Share link</button>}
+          <button className="btn" onClick={share}>{data.isSeed ? 'Copy link' : 'Share link'}</button>
           <button className="btn" onClick={onRegenerate}>Refresh</button>
         </div>
       </header>
@@ -136,6 +160,18 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
 
       {result.investor.ambiguity && (
         <div className="mt-4 rounded-xl border border-line bg-amber-soft text-amber p-3 text-sm"><strong>Check the match:</strong> {result.investor.ambiguity}</div>
+      )}
+      {data.isSeed && (
+        <div className="no-print mt-4 rounded-xl border border-line bg-brand-soft p-4 text-sm flex flex-wrap items-center justify-between gap-3">
+          <p><strong>Example brief.</strong> Written for a sample founder. Add it to your pipeline to take notes, draft a follow-up and track the investor.</p>
+          <button className="btn btn-primary" onClick={adopt} disabled={adopting}>{adopting ? 'Adding…' : 'Add to my pipeline'}</button>
+        </div>
+      )}
+      {sample && (
+        <div className="no-print mt-4 rounded-xl border border-line bg-blue-soft p-4 text-sm text-blue flex flex-wrap items-center justify-between gap-3">
+          <p>Talking points are tailored to a <strong>sample founder</strong> ({DEMO_PROFILE.startup}). Put in your own startup and every brief becomes yours.</p>
+          <a className="btn" href="/settings">Use my startup</a>
+        </div>
       )}
       {result.status === 'unverified' && (
         <div className="card mt-6 p-6">
@@ -220,7 +256,7 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
       {result.status !== 'unverified' && (
         <>
           <Section id="deals" title="Recent portfolio activity" sub={`Investments, exits and milestones from ${fmtDate(result.windowStart)} to ${fmtDate(result.windowEnd)} (last 90 days)`} conf={result.sectionConfidence.deals} count={bySection('deals').length} empty="No investments or exits dated in the last 90 days were found in public sources. That does not prove there were none, only that none could be sourced.">
-            {bySection('deals').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={data.isOwner} />)}
+            {bySection('deals').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={canAssist} />)}
             {undatedDeals.length > 0 && (
               <details className="px-5 py-3 border-t border-line">
                 <summary className="cursor-pointer text-sm font-medium text-amber">Possibly relevant, but the date could not be confirmed ({undatedDeals.length})</summary>
@@ -230,13 +266,13 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
             )}
           </Section>
           <Section id="thesis" title="Stated thesis" sub="What they have said publicly, with where and when" conf={result.sectionConfidence.thesis} count={bySection('thesis').length} empty="No public statements of thesis could be sourced.">
-            {bySection('thesis').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={data.isOwner} />)}
+            {bySection('thesis').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={canAssist} />)}
           </Section>
           <Section id="context" title="Watch-outs and context" sub="Sectors they are pulling back from, portfolio pivots and reported controversies. Reported by the outlet named, not our judgement." conf={result.sectionConfidence.context} count={bySection('context').length} empty="No retreats, pivots or controversies were found in credible public reporting. That is useful, but it does not prove there are none.">
-            {bySection('context').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={data.isOwner} />)}
+            {bySection('context').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={canAssist} />)}
           </Section>
           <Section id="firm" title="Firm snapshot" sub="Fund size, cheque size and focus" conf={result.sectionConfidence.firm} count={bySection('firm').length} empty="No firm facts could be sourced.">
-            {bySection('firm').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={data.isOwner} />)}
+            {bySection('firm').map((c) => <ClaimRow key={c.id} c={c} ev={evById} briefId={data.id} canReport={canAssist} />)}
           </Section>
         </>
       )}
@@ -246,11 +282,29 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           <h2 id="qs" className="text-2xl font-semibold">Questions to prepare for</h2>
           <div className="card mt-3 divide-y divide-line">
             {syn.likelyQuestions.map((q, i) => (
-              <div key={i} className="p-4"><p className="font-medium">{q.question}</p><p className="text-sm text-muted mt-1">{q.prep}</p></div>
+              <div key={i} className="p-4"><p className="font-medium">{q.question}</p><p className="text-sm text-muted mt-1">{q.prep}</p>{canAssist && <Rehearse briefId={data.id} question={q.question} prep={q.prep} />}</div>
             ))}
           </div>
         </section>
       )}
+
+      {syn && (syn.questionsToAsk ?? []).length > 0 && (
+        <section className="mt-8" aria-labelledby="qa">
+          <h2 id="qa" className="text-2xl font-semibold">Questions to ask them</h2>
+          <p className="text-sm text-muted">Fundraising is diligence in both directions. These help you judge whether this is the right partner.</p>
+          <div className="card mt-3 divide-y divide-line">
+            {syn.questionsToAsk.map((q, i) => (
+              <div key={i} className="p-4">
+                <p className="font-medium">{q.question}</p>
+                <p className="text-sm text-muted mt-1">{q.why}</p>
+                {q.claimIds.length > 0 && <p className="text-xs text-muted mt-1">Based on: {q.claimIds.map((id) => claimById.get(id)).filter((c): c is Claim => !!c).map((c) => <a key={c.id} className="underline mr-2" href={`#${c.id}`}>{c.text.length > 70 ? c.text.slice(0, 67) + '...' : c.text}</a>)}</p>}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {data.isOwner && (result.status === 'complete' || result.status === 'partial') && <AfterMeeting briefId={data.id} name={data.investor.name} firm={data.investor.firm} />}
 
       <section className="mt-10" aria-labelledby="ver">
         <h2 id="ver" className="text-2xl font-semibold">How this was verified</h2>
@@ -278,8 +332,10 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
             </li>
           ))}
         </ol>
+        {data.isOwner && <button className="no-print mt-4 text-sm text-muted underline hover:text-red" onClick={remove}>Delete this brief</button>}
         <p className="mt-4 text-xs text-muted">Cost to produce this brief: ${result.usage.costUsd.toFixed(3)} at list price across {result.usage.calls} Gemini calls and {result.usage.groundedQueries} searches. Public professional information only.</p>
       </section>
+      {card && <MeetingCard result={result} startup={data.profile?.startup ?? 'your startup'} onClose={() => setCard(false)} />}
     </article>
   );
 }
@@ -345,6 +401,7 @@ export function toPlainText(r: BriefResult, verified: Claim[], ev: Map<string, E
     L.push('IN 20 SECONDS', ...r.synthesis.skim.map((s) => `- ${s}`), '', 'TALKING POINTS');
     r.synthesis.talkingPoints.forEach((t, i) => L.push(`${i + 1}. ${t.title}`, `   ${t.angle}`, `   Say: "${t.opener}"`));
     L.push('');
+    if ((r.synthesis.questionsToAsk ?? []).length) L.push('QUESTIONS TO ASK THEM', ...r.synthesis.questionsToAsk.map((q) => `- ${q.question}`), '');
   }
   const sec = (title: string, s: Section) => {
     const rows = verified.filter((c) => c.section === s);

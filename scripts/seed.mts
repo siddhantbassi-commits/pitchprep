@@ -33,12 +33,12 @@ async function one([name, firm]: string[]) {
   )!.id as string;
   if (r.claims.length) await db().from('claims').insert(r.claims.map((c) => ({ brief_id: id, claim_id: c.id, section: c.section, kind: c.kind, text: c.text, event_date: c.eventDate, verified: c.verified, drop_reason: c.dropReason, judge: c.judge, evidence_ids: c.evidenceIds, quote: c.quote, severity: c.severity })));
   if (r.evidence.length) await db().from('evidence').insert(r.evidence.map((e) => ({ brief_id: id, evidence_id: e.id, url: e.url, domain: e.domain, title: e.title, published_at: e.publishedAt, tier: e.tier, full_fetch: e.fullFetch, origin: e.origin })));
+  // Replace only after the new one exists, so the public site never shows an empty list.
+  await db().from('briefs').delete().eq('workspace_id', SEED_WS).eq('investor_key', investorKey(name, firm)).neq('id', id);
   console.log(`${name} (${firm}): ${r.status}, ${r.stats.claimsVerified} verified, ${(r.stats.latencyMs / 1000).toFixed(0)}s -> ${id} [${((Date.now() - t) / 1000).toFixed(0)}s wall]`);
 }
 
-// Remove earlier seeds for the investors being regenerated so the list stays clean.
 const todo = INVESTORS.filter(([n]) => !only.length || only.includes(n));
-for (const [n, f] of todo) await db().from('briefs').delete().eq('workspace_id', SEED_WS).eq('investor_key', investorKey(n, f));
 // two at a time keeps us well inside Gemini rate limits
 for (let i = 0; i < todo.length; i += 2) await Promise.all(todo.slice(i, i + 2).map(one));
 console.log('seed done');

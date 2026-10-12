@@ -5,20 +5,20 @@
 body { margin: 0; width: 1280px; height: 720px; position: relative; font-family: Helvetica, Arial, sans-serif; background: #fff; overflow: hidden }
 .title { position: absolute; top: 12px; left: 0; width: 100%; text-align: center; font-size: 25px; font-weight: 700; color: #20365c }
 .sub { position: absolute; top: 40px; left: 0; width: 100%; text-align: center; font-size: 11px; color: #5b6475 }
-.h { position: absolute; top: 58px; height: 38px; background: #20365c; color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border-left: 1px solid #d9d46a }
-.row { position: absolute; left: 28px; width: 1224px; height: 66px; border-bottom: 1px solid #e3e6ec }
-.actor { position: absolute; left: 28px; width: 150px; height: 66px; background: #20365c; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #3a5083 }
+.h { position: absolute; top: 54px; height: 34px; background: #20365c; color: #fff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; border-left: 1px solid #d9d46a }
+.row { position: absolute; left: 28px; width: 1224px; height: 60px; border-bottom: 1px solid #e3e6ec }
+.actor { position: absolute; left: 28px; width: 150px; height: 60px; background: #20365c; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; border-bottom: 1px solid #3a5083 }
 .actor b { font-size: 13px } .actor span { font-size: 10px; opacity: .85; margin-top: 3px }
-.vline { position: absolute; top: 96px; height: 528px; width: 1px; background: #e3e6ec }
-.box { position: absolute; border: 1.6px solid; border-radius: 9px; padding: 4px 7px; font-size: 9.6px; line-height: 1.28; display: flex; align-items: center; justify-content: center; text-align: center; color: #1b2230 }
-.bound { position: absolute; left: 36px; width: 1208px; top: 632px; height: 56px; border: 1.6px solid #d9645b; border-radius: 9px; background: #fdf7f6; display: flex; align-items: center; padding: 0 18px; gap: 26px }
+.vline { position: absolute; top: 88px; height: 540px; width: 1px; background: #e3e6ec }
+.box { position: absolute; border: 1.6px solid; border-radius: 9px; padding: 4px 7px; font-size: 9.2px; line-height: 1.25; display: flex; align-items: center; justify-content: center; text-align: center; color: #1b2230 }
+.bound { position: absolute; left: 36px; width: 1208px; top: 634px; height: 52px; border: 1.6px solid #d9645b; border-radius: 9px; background: #fdf7f6; display: flex; align-items: center; padding: 0 18px; gap: 26px }
 .bound b { color: #c9524a; font-size: 12px; letter-spacing: .02em; white-space: nowrap }
 .bound p { margin: 0; font-size: 11.5px; line-height: 1.4; color: #3d4556 }
 .foot { position: absolute; right: 28px; bottom: 6px; font-size: 8.5px; color: #6b7280 }
 svg { position: absolute; left: 0; top: 0 }
 </style></head><body>
 <div class="title">End Term · PitchPrep, Pre-Meeting Investor Brief: Components Map</div>
-<div class="sub">Name + firm in, a sourced and verified brief out. All AI is Gemini Flash. Code, not the model, decides what is shown.</div>
+<div class="sub">Name + firm in, a sourced and verified brief out, then notes, follow-up and practice. All AI is Gemini Flash. Code, not the model, decides what is shown.</div>
 <div class="h" style="left:28px;width:150px;border-left:0;border-radius:12px 0 0 0">Actor</div>
 <div class="h" style="left:178px;width:179px;">Trigger</div>
 <div class="h" style="left:357px;width:179px;">Input</div>
@@ -26,14 +26,15 @@ svg { position: absolute; left: 0; top: 0 }
 <div class="h" style="left:715px;width:179px;">Processing</div>
 <div class="h" style="left:894px;width:179px;">AI</div>
 <div class="h" style="left:1073px;width:179px;border-radius:0 12px 0 0">Output</div>
-<div class="row" style="top:96px;background:#fffdf7"></div><div class="actor" style="top:96px"><b>Priya</b><span>(Founder · human)</span></div>
-<div class="row" style="top:162px;background:#fff8ea"></div><div class="actor" style="top:162px"><b>PitchPrep app</b><span>(Next.js on Vercel)</span></div>
-<div class="row" style="top:228px;background:#f3f9f4"></div><div class="actor" style="top:228px"><b>Live data layer</b><span>(Google Search + page fetch)</span></div>
-<div class="row" style="top:294px;background:#fbf3f8"></div><div class="actor" style="top:294px"><b>AI model</b><span>(Gemini Flash)</span></div>
-<div class="row" style="top:360px;background:#f7f4fb"></div><div class="actor" style="top:360px"><b>Verification gate</b><span>(Code, not the LLM)</span></div>
-<div class="row" style="top:426px;background:#f3f6fc"></div><div class="actor" style="top:426px"><b>Database</b><span>(Supabase)</span></div>
-<div class="row" style="top:492px;background:#f6f6f1"></div><div class="actor" style="top:492px"><b>Delivery</b><span>(Web · PDF · share link)</span></div>
-<div class="row" style="top:558px;background:#fdf2f4"></div><div class="actor" style="top:558px"><b>Dashboard</b><span>(Vercel)</span></div>
+<div class="row" style="top:88px;background:#fffdf7"></div><div class="actor" style="top:88px"><b>Priya</b><span>(Founder · human)</span></div>
+<div class="row" style="top:148px;background:#fff8ea"></div><div class="actor" style="top:148px"><b>PitchPrep app</b><span>(Next.js on Vercel)</span></div>
+<div class="row" style="top:208px;background:#f3f9f4"></div><div class="actor" style="top:208px"><b>Live data layer</b><span>(Google Search + page fetch)</span></div>
+<div class="row" style="top:268px;background:#fbf3f8"></div><div class="actor" style="top:268px"><b>AI model</b><span>(Gemini Flash)</span></div>
+<div class="row" style="top:328px;background:#f7f4fb"></div><div class="actor" style="top:328px"><b>Verification gate</b><span>(Code, not the LLM)</span></div>
+<div class="row" style="top:388px;background:#f3f6fc"></div><div class="actor" style="top:388px"><b>Database</b><span>(Supabase)</span></div>
+<div class="row" style="top:448px;background:#f6f6f1"></div><div class="actor" style="top:448px"><b>Delivery</b><span>(Web · PDF · meeting card)</span></div>
+<div class="row" style="top:508px;background:#fff6ee"></div><div class="actor" style="top:508px"><b>After the meeting</b><span>(Notes · follow-up · practice)</span></div>
+<div class="row" style="top:568px;background:#fdf2f4"></div><div class="actor" style="top:568px"><b>Dashboard</b><span>(Vercel)</span></div>
 <div class="vline" style="left:178px"></div>
 <div class="vline" style="left:357px"></div>
 <div class="vline" style="left:536px"></div>
@@ -41,39 +42,50 @@ svg { position: absolute; left: 0; top: 0 }
 <div class="vline" style="left:894px"></div>
 <div class="vline" style="left:1073px"></div>
 <svg width="1280" height="720"><defs><marker id="ah" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#6b7280" stroke-width="1.4"/></marker></defs>
-<path d="M346.0,129.0 L368.0,129.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M511.0,154.0 L511.0,195.0 L704.0,195.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M346.0,195.0 L547.0,195.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M625.5,154.0 L625.5,170.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M704.0,195.0 L726.0,195.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M804.5,220.0 L804.5,236.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M704.0,261.0 L726.0,261.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M883.0,261.0 L894.0,261.0 L894.0,327.0 L905.0,327.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M945.0,352.0 L945.0,385.0 L883.0,385.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M883.0,393.0 L1084.0,393.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M804.5,418.0 L804.5,434.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M704.0,459.0 L726.0,459.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M804.5,484.0 L804.5,500.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M883.0,525.0 L1247.0,525.0 L1247.0,135.0 L1241.0,135.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M748.0,484.0 L748.0,566.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
-<path d="M883.0,591.0 L1084.0,591.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/></svg>
-<div class="box" style="left:189px;top:104px;width:157px;height:50px;background:#f1edfb;border-color:#7a5fd0">Investor meeting booked: she enters name + firm, or her calendar surfaces it</div>
-<div class="box" style="left:189px;top:170px;width:157px;height:50px;background:#f1edfb;border-color:#7a5fd0">Every 30 min: calendar link scan finds investor meetings due within 24 hours</div>
-<div class="box" style="left:368px;top:104px;width:157px;height:50px;background:#eaf5fd;border-color:#5b9bd5">Name + firm. Optional: meeting time, a post she pastes</div>
-<div class="box" style="left:547px;top:104px;width:157px;height:50px;background:#e9f7ef;border-color:#4aa974">Saved startup profile: stage, sector, raise, traction</div>
-<div class="box" style="left:1084px;top:104px;width:157px;height:50px;background:#fdeeea;border-color:#d9645b">Brief in about a minute: deals, thesis, watch-outs, 3 talking points</div>
-<div class="box" style="left:547px;top:170px;width:157px;height:50px;background:#e9f7ef;border-color:#4aa974">Checks 6-hour cache and rate limits, loads profile, opens a job</div>
-<div class="box" style="left:726px;top:170px;width:157px;height:50px;background:#fcf1d6;border-color:#e0a93b">Runs 5 searches in parallel under a 2-minute deadline; streams progress</div>
-<div class="box" style="left:547px;top:236px;width:157px;height:50px;background:#e9f7ef;border-color:#4aa974">Rules: robots.txt, no private addresses, no LinkedIn scraping</div>
-<div class="box" style="left:726px;top:236px;width:157px;height:50px;background:#fcf1d6;border-color:#e0a93b">Resolves each citation, opens the article, reads its date and text</div>
-<div class="box" style="left:905px;top:302px;width:157px;height:50px;background:#fbeaf3;border-color:#d45f9b">Searches, extracts claims with exact quotes, fact-checks, writes 3 talking points; spots investor meetings</div>
-<div class="box" style="left:726px;top:368px;width:157px;height:50px;background:#fcf1d6;border-color:#e0a93b">Quote must appear in source; deal dated in last 90 days; dedupe</div>
-<div class="box" style="left:1084px;top:368px;width:157px;height:50px;background:#fdeeea;border-color:#d9645b">Unverified claims dropped and listed as "left out and why"</div>
-<div class="box" style="left:547px;top:434px;width:157px;height:50px;background:#e9f7ef;border-color:#4aa974">Briefs, claims, sources, cost and feedback; private per workspace</div>
-<div class="box" style="left:726px;top:434px;width:157px;height:50px;background:#fcf1d6;border-color:#e0a93b">Logs status, time, tokens and cost for every brief</div>
-<div class="box" style="left:726px;top:500px;width:157px;height:50px;background:#fcf1d6;border-color:#e0a93b">Formats for skim reading; PDF export; share link</div>
-<div class="box" style="left:726px;top:566px;width:157px;height:50px;background:#fcf1d6;border-color:#e0a93b">Aggregates KPIs from Supabase</div>
-<div class="box" style="left:1084px;top:566px;width:157px;height:50px;background:#fdeeea;border-color:#d9645b">Live dashboard: time to brief, verification rate, cost per brief</div>
-<div class="bound"><b>HUMAN BOUNDARY</b><p>AI can research, cite, summarise and draft angles. It does not contact investors, state anything it cannot quote from a source, scrape LinkedIn, judge people or predict funding decisions.<br>Which angle to use, and whether to take the meeting, stays with Priya.</p></div>
+<path d="M346.0,118.0 L368.0,118.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M511.0,141.5 L511.0,178.0 L704.0,178.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M346.0,178.0 L547.0,178.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M625.5,141.5 L625.5,154.5" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M704.0,178.0 L726.0,178.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M804.5,201.5 L804.5,214.5" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M704.0,238.0 L726.0,238.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M883.0,238.0 L894.0,238.0 L894.0,298.0 L905.0,298.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M945.0,321.5 L945.0,350.0 L883.0,350.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M883.0,358.0 L1084.0,358.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M804.5,381.5 L804.5,394.5" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M704.0,418.0 L726.0,418.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M804.5,441.5 L804.5,454.5" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M883.0,478.0 L1247.0,478.0 L1247.0,124.0 L1241.0,124.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M748.0,441.5 L748.0,574.5" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M346.0,538.0 L368.0,538.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M525.0,538.0 L547.0,538.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M704.0,538.0 L726.0,538.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M883.0,538.0 L905.0,538.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M1062.0,538.0 L1084.0,538.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+<path d="M883.0,598.0 L1084.0,598.0" fill="none" stroke="#6b7280" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/></svg>
+<div class="box" style="left:189px;top:94.5px;width:157px;height:47px;background:#f1edfb;border-color:#7a5fd0">Investor meeting booked: she enters name + firm, or her calendar surfaces it</div>
+<div class="box" style="left:189px;top:154.5px;width:157px;height:47px;background:#f1edfb;border-color:#7a5fd0">Every 30 min: calendar link scan finds investor meetings due within 24 hours</div>
+<div class="box" style="left:368px;top:94.5px;width:157px;height:47px;background:#eaf5fd;border-color:#5b9bd5">Name + firm. Optional: meeting time, a post she pastes</div>
+<div class="box" style="left:547px;top:94.5px;width:157px;height:47px;background:#e9f7ef;border-color:#4aa974">Saved startup profile: stage, sector, raise, traction</div>
+<div class="box" style="left:1084px;top:94.5px;width:157px;height:47px;background:#fdeeea;border-color:#d9645b">Brief in about a minute: deals, thesis, watch-outs, 3 talking points</div>
+<div class="box" style="left:547px;top:154.5px;width:157px;height:47px;background:#e9f7ef;border-color:#4aa974">Checks 6-hour cache and rate limits, loads profile, opens a job</div>
+<div class="box" style="left:726px;top:154.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Runs 5 searches in parallel under a 2-minute deadline; streams progress</div>
+<div class="box" style="left:547px;top:214.5px;width:157px;height:47px;background:#e9f7ef;border-color:#4aa974">Rules: robots.txt, no private addresses, no LinkedIn scraping</div>
+<div class="box" style="left:726px;top:214.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Resolves each citation, opens the article, reads its date and text</div>
+<div class="box" style="left:905px;top:274.5px;width:157px;height:47px;background:#fbeaf3;border-color:#d45f9b">Searches, extracts claims with quotes, fact-checks, writes talking points and questions; spots investor meetings</div>
+<div class="box" style="left:726px;top:334.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Quote must appear in source; deal dated in last 90 days; dedupe</div>
+<div class="box" style="left:1084px;top:334.5px;width:157px;height:47px;background:#fdeeea;border-color:#d9645b">Unverified claims dropped and listed as "left out and why"</div>
+<div class="box" style="left:547px;top:394.5px;width:157px;height:47px;background:#e9f7ef;border-color:#4aa974">Briefs, claims, sources, cost and feedback; private per workspace</div>
+<div class="box" style="left:726px;top:394.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Logs status, time, tokens and cost for every brief</div>
+<div class="box" style="left:726px;top:454.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Formats for skim reading; PDF; share link; phone meeting card</div>
+<div class="box" style="left:189px;top:514.5px;width:157px;height:47px;background:#f1edfb;border-color:#7a5fd0">Meeting done: she adds notes, or practises an answer</div>
+<div class="box" style="left:368px;top:514.5px;width:157px;height:47px;background:#eaf5fd;border-color:#5b9bd5">Her notes, and the answer she typed or dictated</div>
+<div class="box" style="left:547px;top:514.5px;width:157px;height:47px;background:#e9f7ef;border-color:#4aa974">Her startup profile and the verified claims only</div>
+<div class="box" style="left:726px;top:514.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Code checks every figure against her profile; flags placeholders</div>
+<div class="box" style="left:905px;top:514.5px;width:157px;height:47px;background:#fbeaf3;border-color:#d45f9b">Drafts the follow-up; coaches the answer</div>
+<div class="box" style="left:1084px;top:514.5px;width:157px;height:47px;background:#fdeeea;border-color:#d9645b">A draft she edits and sends herself; status and next step saved</div>
+<div class="box" style="left:726px;top:574.5px;width:157px;height:47px;background:#fcf1d6;border-color:#e0a93b">Aggregates KPIs from Supabase</div>
+<div class="box" style="left:1084px;top:574.5px;width:157px;height:47px;background:#fdeeea;border-color:#d9645b">Live dashboard: time to brief, verification rate, cost per brief</div>
+<div class="bound"><b>HUMAN BOUNDARY</b><p>AI can research, cite, summarise and draft angles. It does not contact investors, send any email, state anything it cannot quote from a source, scrape LinkedIn, judge people or predict funding decisions.<br>Which angle to use, whether to take the meeting, and what to send afterwards, stays with Priya.</p></div>
 <div class="foot">Built from MESA End Term Problem Statement 1 and the Case 03 component-map style reference</div>
 </body></html>

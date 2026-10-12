@@ -4,7 +4,7 @@ export const SECTIONS = ['deals', 'thesis', 'context', 'firm'] as const;
 export type Section = (typeof SECTIONS)[number];
 
 export const KINDS = [
-  'investment', 'exit', 'milestone', 'fund', 'statement', 'retreat', 'pivot', 'controversy', 'portfolio_trouble', 'firm_fact',
+  'investment', 'exit', 'milestone', 'fund', 'statement', 'retreat', 'pivot', 'controversy', 'portfolio_trouble', 'people_change', 'firm_fact',
 ] as const;
 
 export interface Evidence {
@@ -82,6 +82,11 @@ export const Synthesis = z.object({
     claimIds: z.array(z.string()).describe('IDs of verified claims this point builds on (at least one)'),
   })),
   likelyQuestions: z.array(z.object({ question: z.string(), prep: z.string() })),
+  questionsToAsk: z.array(z.object({
+    question: z.string().describe('A question the founder should ask the investor'),
+    why: z.string().describe('One sentence on what the answer will tell the founder'),
+    claimIds: z.array(z.string()).describe('Verified claim ids the question is anchored to; may be empty for universal diligence questions'),
+  })).describe('Three questions for the founder to put to the investor'),
 });
 export type Synthesis = z.infer<typeof Synthesis>;
 

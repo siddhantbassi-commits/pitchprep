@@ -28,8 +28,8 @@ const pct = (a: number[], p: number) => (a.length ? a[Math.min(a.length - 1, Mat
 export async function getStats(days = 30): Promise<Stats> {
   const since = new Date(Date.now() - days * 86_400_000).toISOString();
   const [b, c, f] = await Promise.all([
-    db().from('briefs').select('id,status,latency_ms,cost_usd,claims_verified,claims_dropped,sources,confidence,created_at').gte('created_at', since).limit(5000),
-    db().from('claims').select('drop_reason,verified,briefs!inner(created_at)').gte('briefs.created_at', since).limit(30000),
+    db().from('briefs').select('id,status,latency_ms,cost_usd,claims_verified,claims_dropped,sources,confidence,created_at').is('parent_brief_id', null).gte('created_at', since).limit(5000),
+    db().from('claims').select('drop_reason,verified,briefs!inner(created_at,parent_brief_id)').is('briefs.parent_brief_id', null).gte('briefs.created_at', since).limit(30000),
     db().from('feedback').select('verdict').gte('created_at', since).limit(5000),
   ]);
   const rows = b.data ?? [];

@@ -1,4 +1,4 @@
-import BriefList from '@/components/BriefList';
+import BriefHistory from '@/components/BriefHistory';
 import { currentWorkspace, listBriefs } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
@@ -11,7 +11,7 @@ export default async function History() {
     <div>
       <h1 className="text-3xl font-semibold">Your briefs</h1>
       <p className="text-muted mb-4">Saved in this browser. Delete everything any time from My startup.</p>
-      <BriefList rows={rows} empty="No briefs yet. Generate your first one from the home page." />
+      <BriefHistory rows={rows} />
     </div>
   );
 }

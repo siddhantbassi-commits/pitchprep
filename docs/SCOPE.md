@@ -29,22 +29,35 @@ Priya -> name + firm -> `POST /api/briefs` -> job row in Supabase -> background 
 | Cost reporting | Tokens at paid-tier list price plus grounded searches at list price | The dashboard reports what the tool costs to run. Google's first 5,000 searches a month are free, so actual spend is lower. |
 | Hosting | Vercel (Mumbai `bom1`, Hobby plan, 300 s function limit with Fluid compute) and Supabase (Mumbai) | Same stack as the earlier cases. Background work runs with `after()` and the page polls progress. Verified on the deployed site: a brief finishes in about 50 s. |
 | Database | New tables in an existing Supabase project, not a new project | The access token could not create a project (HTTP 403). The existing project's tables are untouched; PitchPrep's table grants are scoped to its own eight tables. |
+| Rehearsal numbers | Checked in code against her profile | A language model cannot be trusted to notice that 40% contradicts the 34% on record; a set comparison can. |
 | Calendar | Secret iCal link, no OAuth | Google OAuth for calendar scopes needs app verification. A read-only secret link needs nothing from the user's Google account and works with any calendar. Only titles, times, attendee names and email domains reach Gemini. |
+| Follow-up emails | Drafted, never sent | The system has no code path that emails anyone. The draft opens in her own email app, which keeps the decision and the sender identity with her (Check 07). |
 | Handoff channel | Web (history, share link, PDF) now; Telegram nudge is roadmap | Same reasoning as Case 3: a phone message minutes before the meeting is the right channel, but it needs a bot token, so it is left out rather than faked. |
 
 ## Beyond the brief (built)
-- Founder profile that tailors every talking point; editable.
+Priya will take 40 or more meetings over a raise, so the brief is the start of the workflow, not the whole of it.
+
+**Before the meeting**
+- Founder profile that tailors every talking point (editable; a sample founder is clearly labelled so nothing looks like a dummy).
 - Citations, exact quotes and dates on every claim; per-section confidence computed from source count, tier and recency.
+- Fit snapshot (stage, sector, cheque) calibrated to say "unknown" when sources are silent, and to call a weak match a bridge, not a thesis match.
+- **Questions to ask them**: fundraising is diligence in both directions (follow-on reserves, decision process, value-add), anchored to verified facts.
 - "What we left out and why", and an honest "nothing found" state instead of filler.
-- 6-hour cache for repeat investors; share link; copy as text; PDF export; refresh.
-- "Compared with your last brief" panel when you refresh a brief on the same investor (events dated after it are "new since then"; other finds are labelled "also surfaced", because live search varies).
-- **Meetings:** connect a calendar link; investor meetings are detected, and briefs are prepared automatically about 24 hours before (GitHub Actions every 30 minutes) or on one click.
-- Per-claim "Wrong? / Outdated?" feedback.
-- Fit snapshot (stage, sector, cheque) calibrated to say "unknown" when the sources are silent.
-- Ops dashboard: time to brief, share under two minutes, cost per brief, verification pass rate, what the gate dropped.
-- Real "delete all my data" cascade.
-- Prompt-injection and SSRF defences, rate limits (8 briefs per hour per browser, 15 per IP, 150 a day overall, to cap spend on a public demo), keep-alive and health checks (GitHub Actions).
-- Evaluation harness (`npm run eval`) with real, fake, mismatched and adversarial inputs; see [eval-report.md](eval-report.md).
+- **Meeting card**: a large-type, phone-friendly view (openers, key facts, watch-outs, expected questions) for the minute before walking in; the app installs to the home screen.
+- **Meetings**: connect a calendar link (or try a generated sample calendar); investor meetings are detected, and briefs are prepared automatically about 24 hours before (GitHub Actions every 30 minutes) or on one click.
+- Refresh with a "compared with your last brief" panel (genuinely new events separated from facts that merely surfaced this time).
+- Copy as text, share link, PDF export, 6-hour cache.
+
+**After the meeting**
+- **Pipeline**: every investor researched, ranked by fit, with status (researching, booked, met, follow-up sent, in talks, passed), next step with date and overdue flag, notes, search and filters.
+- **Follow-up email draft**: written only from her notes, her profile and the verified facts; commitments stay exactly as she made them; placeholders such as [attach deck] are flagged; code flags any figure not found in her profile or notes. She edits and sends it herself.
+- **Rehearsal**: type or dictate an answer to a likely question and get coaching; **code** checks every figure she quotes against her own profile, so "40%" when the record says 34% is caught before an investor hears it.
+
+**Trust and operations**
+- Per-claim "Wrong? / Outdated?" feedback; ops dashboard (time to brief, share under two minutes, cost per brief, verification rate, what the gate dropped); in-product **Evidence** page with the live evaluation results.
+- Evaluation harness (`npm run eval`): real, fake, mismatched and adversarial inputs; independent spot-check ([spot-check.md](spot-check.md)).
+- Real "delete my data" and per-brief delete; private signed-cookie workspaces; prompt-injection, SSRF and rate-limit protections (8 briefs per hour per browser, 15 per IP, 150 a day overall, to cap spend on a public demo); keep-alive and health checks.
+- Accessible by design: skip link, labelled controls, keyboard shortcut (`/` to start typing), dark mode, reduced-motion support, print stylesheet for PDF.
 
 ## Not built, documented as roadmap
 Telegram or email nudge before the meeting (needs a bot token or a verified sending domain), recurring-event expansion in the calendar reader, email sign-in across devices, CRM sync (Affinity, Attio, HubSpot), warm-intro paths, multi-partner panel meetings, post-meeting follow-up drafts, WhatsApp delivery.

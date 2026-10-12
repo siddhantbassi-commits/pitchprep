@@ -21,7 +21,7 @@
 | # | Check | Evidence | Pass/Fail |
 |---|-------|----------|-----------|
 | 06 | **Failure Risk OK**: consequence if AI is wrong? | The real risk is Priya repeating a wrong fact to an investor. Mitigated: every claim must carry an exact quote found in the source text, deals must be dated inside 90 days, a second pass fact-checks, anything unverified is dropped and listed, and each claim links to its source so she can check in one click. Nothing is sent to anyone. | YES |
-| 07 | **Judgment Protected**: human decides before anything consequential? | The system researches and drafts angles. It never contacts an investor, never predicts what they will do, and labels controversies as "reported by <outlet>" rather than judging them. Which angle to use, and whether to take the meeting, stays with Priya. | YES |
+| 07 | **Judgment Protected**: human decides before anything consequential? | The system researches and drafts angles and follow-up emails. It never contacts an investor or sends an email (drafts open in her own email app), never predicts what they will do, and labels controversies as "reported by <outlet>" rather than judging them. Which angle to use, and whether to take the meeting, stays with Priya. | YES |
 | 09 | **Owner Clear**: one person accountable? | Priya owns the use of every brief and every meeting decision. | YES |
 
 ## The Cut

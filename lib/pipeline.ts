@@ -166,6 +166,7 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
         .filter((t) => t.claimIds.length > 0)
         .slice(0, 3);
       s.fit.claimIds = s.fit.claimIds.filter((id) => validIds.has(id));
+      s.questionsToAsk = (s.questionsToAsk ?? []).map((q) => ({ ...q, claimIds: q.claimIds.filter((id) => validIds.has(id)) })).slice(0, 3);
       if (s.talkingPoints.length === 3 && s.skim.length >= 1) synthesis = { ...s, skim: s.skim.slice(0, 3) };
     } catch { /* retry once */ }
   }
