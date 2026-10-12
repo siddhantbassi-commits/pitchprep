@@ -23,7 +23,8 @@ const rows = [
 ];
 // [id, row, col, text]
 const boxes = [
-  ['p_trig', 0, 'Trigger', 'Investor meeting booked: she enters investor name + firm'],
+  ['p_trig', 0, 'Trigger', 'Investor meeting booked: she enters name + firm, or her calendar surfaces it'],
+  ['s_trig', 1, 'Trigger', 'Every 30 min: calendar link scan finds investor meetings due within 24 hours'],
   ['p_in', 0, 'Input', 'Name + firm. Optional: meeting time, a post she pastes'],
   ['p_ctx', 0, 'Context', 'Saved startup profile: stage, sector, raise, traction'],
   ['p_out', 0, 'Output', 'Brief in about a minute: deals, thesis, watch-outs, 3 talking points'],
@@ -31,7 +32,7 @@ const boxes = [
   ['s_proc', 1, 'Processing', 'Runs 5 searches in parallel under a 2-minute deadline; streams progress'],
   ['l_ctx', 2, 'Context', 'Rules: robots.txt, no private addresses, no LinkedIn scraping'],
   ['l_proc', 2, 'Processing', 'Resolves each citation, opens the article, reads its date and text'],
-  ['a_ai', 3, 'AI', 'Searches the web, extracts claims with exact quotes, fact-checks, writes 3 talking points'],
+  ['a_ai', 3, 'AI', 'Searches, extracts claims with exact quotes, fact-checks, writes 3 talking points; spots investor meetings'],
   ['g_proc', 4, 'Processing', 'Quote must appear in source; deal dated in last 90 days; dedupe'],
   ['g_out', 4, 'Output', 'Unverified claims dropped and listed as "left out and why"'],
   ['d_ctx', 5, 'Context', 'Briefs, claims, sources, cost and feedback; private per workspace'],
@@ -50,6 +51,7 @@ const R = (id) => pos[id], cx = (b) => b.x + b.w / 2, cy = (b) => b.y + b.h / 2;
 const edges = [
   ['p_trig', 'p_in', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['p_in', 's_ctx', (a, b) => [[a.x + a.w - 14, a.y + a.h], [a.x + a.w - 14, cy(b)], [b.x + b.w, cy(b)]]],
+  ['s_trig', 's_ctx', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['p_ctx', 's_ctx', (a, b) => [[cx(a), a.y + a.h], [cx(b), b.y]]],
   ['s_ctx', 's_proc', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['s_proc', 'l_proc', (a, b) => [[cx(a), a.y + a.h], [cx(b), b.y]]],

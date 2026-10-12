@@ -11,3 +11,4 @@ out/
 .tmp
 .claude/launch.json
 .env*
+AGENTS.md
