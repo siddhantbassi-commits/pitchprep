@@ -1,0 +1,35 @@
+{
+  "name": "pitchprep",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pre-meeting investor brief: name + firm in, sourced, verified brief out in under two minutes",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "spike": "tsx --env-file=.env.local scripts/spike.mts",
+    "eval": "tsx --env-file=.env.local scripts/eval.mts",
+    "run": "tsx --env-file=.env.local scripts/run.mts",
+    "db:setup": "tsx --env-file=.env.local scripts/db-setup.mts"
+  },
+  "dependencies": {
+    "@google/genai": "^2.28.0",
+    "@supabase/supabase-js": "^2.117.3",
+    "next": "^16.4.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "zod": "^4.6.6"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.3",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "postcss": "^8.5.29",
+    "tailwindcss": "^4.3.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
+  }
+}
