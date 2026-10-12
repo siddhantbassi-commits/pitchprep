@@ -33,7 +33,7 @@ export async function POST(req: Request) {
   }
   const ip = await clientKey();
   const ok =
-    (await allow(`ws:${ws}`, 12, 3600_000)) && (await allow(`ip:${ip}`, 25, 3600_000)) && (await allow('global', 600, 86_400_000));
+    (await allow(`ws:${ws}`, 8, 3600_000)) && (await allow(`ip:${ip}`, 15, 3600_000)) && (await allow('global', 150, 86_400_000));
   if (!ok) {
     await logEvent('api', 'rate_limited', null, { ws });
     return NextResponse.json({ error: 'You have reached the hourly limit for new briefs. Please try again a little later.' }, { status: 429 });

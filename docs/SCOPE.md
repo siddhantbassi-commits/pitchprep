@@ -43,7 +43,7 @@ Priya -> name + firm -> `POST /api/briefs` -> job row in Supabase -> background 
 - Fit snapshot (stage, sector, cheque) calibrated to say "unknown" when the sources are silent.
 - Ops dashboard: time to brief, share under two minutes, cost per brief, verification pass rate, what the gate dropped.
 - Real "delete all my data" cascade.
-- Prompt-injection and SSRF defences, rate limits, keep-alive and health checks (GitHub Actions).
+- Prompt-injection and SSRF defences, rate limits (8 briefs per hour per browser, 15 per IP, 150 a day overall, to cap spend on a public demo), keep-alive and health checks (GitHub Actions).
 - Evaluation harness (`npm run eval`) with real, fake, mismatched and adversarial inputs; see [eval-report.md](eval-report.md).
 
 ## Not built, documented as roadmap

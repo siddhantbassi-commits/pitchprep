@@ -1,3 +1,5 @@
+> **Note:** this is the original plan, written before the build. What was actually built, and the decisions made along the way, are in [SCOPE.md](SCOPE.md). Differences: the Telegram nudge stayed on the roadmap, access uses a signed browser workspace instead of email sign-in, and the judge now rewrites partly-supported claims (found through the spot-check).
+
 # End-Term Build Plan: Pre-Meeting Investor Brief
 
 Section 1 Final Exam, MESA Cohort C4. Working name: **PitchPrep** (change freely).
