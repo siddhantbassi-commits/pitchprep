@@ -6,6 +6,7 @@ import { db, must } from './db';
 import { DEMO_PROFILE } from './demoProfile';
 import { WORKSPACE_COOKIE, verifyWorkspace } from './workspace';
 import { overallConfidence } from './verify';
+import { computeDelta, type Delta } from './delta';
 import type { BriefResult, FounderProfile, StageState } from './types';
 import type { ListRow } from '@/components/BriefList';
 import { FounderProfile as ProfileSchema } from './types';
@@ -176,4 +177,12 @@ export async function shareToken(id: string, ws: string): Promise<string | null>
 
 export async function deleteWorkspace(ws: string) {
   must(await db().from('workspaces').delete().eq('id', ws), 'deleteWorkspace'); // cascades to profile, briefs, claims, evidence, feedback
+}
+
+/** "What changed since your last brief" for a finished brief you own, or null. */
+export async function loadDelta(row: BriefRow, isOwner: boolean): Promise<Delta | null> {
+  if (!isOwner || !row.result || (row.status !== 'complete' && row.status !== 'partial')) return null;
+  const prev = await latestPrevious(row.workspace_id, investorKey(row.investor_name, row.firm), row.id).catch(() => null);
+  if (!prev?.result || Date.parse(prev.created_at) >= Date.parse(row.created_at)) return null;
+  return computeDelta(row.result, prev);
 }

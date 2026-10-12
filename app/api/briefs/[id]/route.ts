@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getBrief, currentWorkspace, shareToken } from '@/lib/store';
+import { getBrief, currentWorkspace, loadDelta, shareToken } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,7 +9,9 @@ export async function GET(req: Request, ctx: { params: Promise<{ id: string }> }
   const ws = await currentWorkspace().catch(() => null);
   const row = await getBrief(id, ws, url.searchParams.get('t'));
   if (!row) return NextResponse.json({ error: 'Brief not found' }, { status: 404 });
+  const isOwner = !!ws && ws === row.workspace_id;
   return NextResponse.json({
+    delta: await loadDelta(row, isOwner),
     id: row.id, status: row.status, stages: row.stages, result: row.result, error: row.error, investor: { name: row.investor_name, firm: row.firm },
     createdAt: row.created_at, isOwner: !!ws && ws === row.workspace_id, isSeed: row.is_seed, profile: row.profile_snapshot, meetingAt: row.meeting_at,
   });

@@ -1,7 +1,6 @@
 import { notFound } from 'next/navigation';
 import BriefView, { type BriefData } from '@/components/BriefView';
-import { computeDelta } from '@/lib/delta';
-import { currentWorkspace, getBrief, investorKey, latestPrevious } from '@/lib/store';
+import { currentWorkspace, getBrief, loadDelta } from '@/lib/store';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,10 +21,6 @@ export default async function BriefPage({ params, searchParams }: { params: Prom
     investor: { name: row.investor_name, firm: row.firm }, createdAt: row.created_at,
     isOwner: !!ws && ws === row.workspace_id, isSeed: row.is_seed, profile: row.profile_snapshot, meetingAt: row.meeting_at,
   };
-  let delta: BriefData['delta'] = null;
-  if (initial.isOwner && row.result && (row.status === 'complete' || row.status === 'partial')) {
-    const prev = await latestPrevious(row.workspace_id, investorKey(row.investor_name, row.firm), row.id).catch(() => null);
-    if (prev?.result && Date.parse(prev.created_at) < Date.parse(row.created_at)) delta = computeDelta(row.result, prev);
-  }
+  const delta = await loadDelta(row, initial.isOwner);
   return <BriefView initial={{ ...initial, delta }} token={t ?? null} />;
 }
