@@ -105,6 +105,8 @@ const CONF_STYLE: Record<Confidence, string> = {
 function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefResult; onRegenerate: () => void }) {
   const [copied, setCopied] = useState('');
   const [card, setCard] = useState(false);
+  // A link ending in #card (the pre-meeting email's button) opens the meeting card straight away.
+  useEffect(() => { if (typeof location !== 'undefined' && location.hash === '#card' && result.synthesis) setCard(true); }, [result.synthesis]);
   const [adopting, setAdopting] = useState(false);
   const router = useRouter();
   const verified = useMemo(() => result.claims.filter((c) => c.verified), [result]);

@@ -180,7 +180,7 @@ export async function runNudges(now = new Date(), base?: string): Promise<RunSum
             const prev = await latestPrevious(ws, investorKey(b.investor_name, b.firm), b.id).catch(() => null);
             if (prev?.result) newSince = computeDelta(b.result, prev).newSince.map((c) => c.text).slice(0, 4);
           }
-          outcome = await deliver(ws, pr.email, { kind: d.kind as NudgeKind, ...contentFromBrief(b.result, b.created_at), meetingAt: m.starts_at, newSince, followUpFor: b.investor_name, next: d.kind === 'follow_up' ? `/brief/${b.id}#after` : `/brief/${b.id}` }, base);
+          outcome = await deliver(ws, pr.email, { kind: d.kind as NudgeKind, ...contentFromBrief(b.result, b.created_at), meetingAt: m.starts_at, newSince, followUpFor: b.investor_name, next: d.kind === 'follow_up' ? `/brief/${b.id}#after` : d.kind === 'pre_meeting' ? `/brief/${b.id}#card` : `/brief/${b.id}` }, base);
         }
         if (outcome.ok) { await record(d.kind, d.ref); out.sent++; } else { out.failed++; }
       }
