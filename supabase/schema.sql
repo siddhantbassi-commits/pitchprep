@@ -118,6 +118,38 @@ begin
   return c;
 end $$;
 
+
+-- Calendar: a secret iCal link per workspace, and the investor meetings detected from it.
+create table if not exists calendar_feeds (
+  workspace_id uuid primary key references workspaces(id) on delete cascade,
+  ical_url text not null,
+  auto_prepare boolean not null default false,
+  last_synced_at timestamptz,
+  last_error text,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists meetings (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  uid text not null,
+  starts_at timestamptz not null,
+  title text,
+  attendees jsonb not null default '[]',
+  is_investor boolean not null default false,
+  investor_name text,
+  firm text,
+  confidence text,
+  brief_id uuid references briefs(id) on delete set null,
+  status text not null default 'detected' check (status in ('detected','prepared','skipped')),
+  created_at timestamptz not null default now(),
+  unique (workspace_id, uid)
+);
+create index if not exists meetings_ws_idx on meetings (workspace_id, starts_at);
+
+alter table calendar_feeds enable row level security;
+alter table meetings enable row level security;
+
 alter table workspaces enable row level security;
 alter table founder_profiles enable row level security;
 alter table briefs enable row level security;
@@ -129,6 +161,6 @@ alter table rate_limits enable row level security;
 
 -- Explicit grants, scoped to PitchPrep's own tables only (this project is shared with other apps; their grants are not touched).
 grant usage on schema public to service_role;
-grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits to service_role;
+grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings to service_role;
 grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq to service_role;
 grant execute on function bump_rate(text, timestamptz) to service_role;

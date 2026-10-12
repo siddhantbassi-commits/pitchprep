@@ -1,0 +1,13 @@
+name: prepare-meeting-briefs
+# Every 30 minutes: for workspaces with auto-prepare on, create briefs for investor meetings starting within 24 hours.
+on:
+  schedule: [{ cron: '*/30 * * * *' }]
+  workflow_dispatch: {}
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS --retry 2 --max-time 120 -H "Authorization: Bearer $CRON_SECRET" "$APP_URL/api/cron/meetings"
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

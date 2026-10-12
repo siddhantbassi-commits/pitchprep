@@ -1,0 +1,39 @@
+import { NextResponse } from 'next/server';
+import { z } from 'zod';
+import { db, must } from '@/lib/db';
+import { fetchIcs, syncCalendar } from '@/lib/calendar';
+import { allow, currentWorkspace } from '@/lib/store';
+
+export const maxDuration = 60;
+
+const Body = z.object({ url: z.string().trim().max(600), auto: z.boolean().optional() });
+
+export async function PUT(req: Request) {
+  const body = Body.safeParse(await req.json().catch(() => null));
+  if (!body.success) return NextResponse.json({ error: 'Paste your calendar link.' }, { status: 400 });
+  const ws = await currentWorkspace();
+  if (!(await allow(`cal:${ws}`, 20, 3600_000))) return NextResponse.json({ error: 'Too many calendar syncs. Try again later.' }, { status: 429 });
+  try {
+    await fetchIcs(body.data.url); // validates the link before we store it
+  } catch (e) {
+    return NextResponse.json({ error: (e as Error).message }, { status: 400 });
+  }
+  must(await db().from('calendar_feeds').upsert({ workspace_id: ws, ical_url: body.data.url.replace(/^webcal:/i, 'https:'), auto_prepare: !!body.data.auto }), 'save feed');
+  const r = await syncCalendar(ws);
+  return NextResponse.json({ ok: true, meetings: r.meetings, error: r.error ?? null });
+}
+
+export async function PATCH(req: Request) {
+  const body = z.object({ auto: z.boolean() }).safeParse(await req.json().catch(() => null));
+  if (!body.success) return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
+  const ws = await currentWorkspace();
+  await db().from('calendar_feeds').update({ auto_prepare: body.data.auto }).eq('workspace_id', ws);
+  return NextResponse.json({ ok: true });
+}
+
+export async function DELETE() {
+  const ws = await currentWorkspace();
+  await db().from('meetings').delete().eq('workspace_id', ws);
+  await db().from('calendar_feeds').delete().eq('workspace_id', ws);
+  return NextResponse.json({ ok: true });
+}

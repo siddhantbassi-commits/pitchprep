@@ -118,7 +118,7 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
     <article>
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className="label">Pre-meeting brief{data.isSeed ? ' · example' : ''}</p>
+          <p className="label">Pre-meeting brief{data.isSeed ? ' · example' : ''}{data.meetingAt ? ` · for your meeting on ${fmtDateTime(data.meetingAt)}` : ''}</p>
           <h1 className="mt-1 text-3xl sm:text-4xl font-semibold">{result.investor.name}</h1>
           <p className="text-lg text-muted">{[result.investor.role, result.investor.firm].filter(Boolean).join(' · ')}</p>
           <p className="mt-2 text-sm text-muted">

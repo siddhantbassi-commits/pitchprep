@@ -14,6 +14,7 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 
 const nav = [
   { href: '/', label: 'New brief' },
+  { href: '/meetings', label: 'Meetings' },
   { href: '/briefs', label: 'History' },
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/method', label: 'How it works' },

@@ -46,7 +46,7 @@ export default async function Dashboard() {
         <Tile label="Under 2 minutes" value={pct(s.under120)} sub="Target from the brief: 100%" />
         <Tile label="Cost per brief" value={s.avgCost == null ? '-' : `$${s.avgCost.toFixed(3)}`} sub={`$${s.totalCost.toFixed(2)} total at list price`} />
         <Tile label="Claims passing verification" value={pct(s.passRate)} sub={`${s.avgVerified?.toFixed(1) ?? '-'} verified claims per brief`} />
-        <Tile label="Sources per brief" value={s.avgSources?.toFixed(1) ?? '-'} sub="Each opened and dated" />
+        <Tile label="Sources per brief" value={s.avgSources?.toFixed(1) ?? '-'} sub="Each one opened and read" />
         <Tile label="Completion rate" value={pct(s.successRate)} sub="Briefs that ended with a result" />
         <Tile label="Prep time saved" value={`${s.hoursSaved.toFixed(1)}h`} sub="vs 45 minutes of manual prep each" />
       </div>
