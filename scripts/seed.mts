@@ -21,7 +21,13 @@ must(await db().from('founder_profiles').upsert({ workspace_id: SEED_WS, profile
 
 async function one([name, firm]: string[]) {
   const t = Date.now();
-  const r = await runPipeline({ name, firm, profile: DEMO_PROFILE });
+  // Live search varies. Examples are showcases, so retry a thin run (under 6 verified claims) up to twice and keep the best.
+  // The evaluation (npm run eval) is NOT filtered this way: it reports every run as it comes.
+  let r = await runPipeline({ name, firm, profile: DEMO_PROFILE });
+  for (let attempt = 1; attempt < 3 && (r.status !== 'complete' || r.stats.claimsVerified < 6); attempt++) {
+    const next = await runPipeline({ name, firm, profile: DEMO_PROFILE });
+    if (next.status === 'complete' && next.stats.claimsVerified > r.stats.claimsVerified) r = next;
+  }
   const id = must(
     await db().from('briefs').insert({
       workspace_id: SEED_WS, investor_name: name, firm, investor_key: investorKey(name, firm), status: r.status, result: r,

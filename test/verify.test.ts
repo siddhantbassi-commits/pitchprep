@@ -102,3 +102,11 @@ test('vague wording is detected; named subjects pass', () => {
   assert.equal(isVague('Forerunner led a $30 million Series A in Natural.'), false);
   assert.equal(isVague('Kirsten Green warned that virality will not endure for some consumer AI startups.'), false);
 });
+
+test('a stated view that does not name the investor or firm is dropped (an unnamed voice must not be passed off as theirs)', () => {
+  const ev1 = [ev('E1', 'Rajan Anandan said Peak XV Partners works with missionary leaders. The best leaders are grateful, missionary, resilient, and focused.')];
+  const mk = (text: string, quote: string) => claim({ section: 'thesis', kind: 'statement', eventDate: '2026-09-29', text, quote, evidenceIds: ['E1'] });
+  const r = run([mk('The best leaders are grateful, missionary and resilient.', 'The best leaders are grateful, missionary, resilient'), mk('Rajan Anandan said the best leaders are missionary.', 'The best leaders are grateful, missionary, resilient')], ev1);
+  assert.equal(r[0].dropReason, 'unattributed_statement');
+  assert.equal(r[1].verified, true);
+});

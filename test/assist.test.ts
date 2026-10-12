@@ -50,3 +50,22 @@ test('an email that already has line breaks is left alone', () => {
   const e = 'Hi Kirsten,\n\nThanks.\n\nBest,\nPriya';
   assert.equal(tidyEmail(e), e);
 });
+
+import { applyFidelity } from '../lib/assist';
+
+test('fidelity rewrites replace only unfaithful points with non-empty text', () => {
+  const pts = [
+    { title: 'a', angle: 'angle A', opener: 'opener A', claimIds: ['C1'] },
+    { title: 'b', angle: 'angle B', opener: 'opener B', claimIds: ['C2'] },
+    { title: 'c', angle: 'angle C', opener: 'opener C', claimIds: ['C3'] },
+  ];
+  const r = applyFidelity(pts, [
+    { index: 0, faithful: true, opener: 'IGNORED', angle: 'IGNORED' },
+    { index: 1, faithful: false, opener: 'fixed B', angle: 'fixed angle B' },
+    { index: 2, faithful: false, opener: '   ', angle: 'x' }, // empty rewrite is refused
+  ]);
+  assert.equal(r.fixed, 1);
+  assert.equal(r.points[0].opener, 'opener A');
+  assert.equal(r.points[1].opener, 'fixed B');
+  assert.equal(r.points[2].opener, 'opener C');
+});

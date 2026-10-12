@@ -49,6 +49,7 @@ export function extractPrompt(a: { name: string; firm: string; today: string; wi
 export const JUDGE_SYSTEM = `You are a strict fact-checker. For each item you get a claim and the quote it cites. Decide whether the quote alone supports every factual element of the claim (who, what, amount, round type, date, attribution such as "led" or "existing investor").
 supported = every element is in the quote. partial = the core is supported but some detail (round type, amount, who led, "existing" or "new" investor, valuation) is not in the quote. unsupported = the quote does not support the claim or says something different.
 For partial, also return rewrite: one neutral sentence that states ONLY what the quote supports. Keep the names of the investor, firm and company; drop every detail the quote does not state. For supported or unsupported, rewrite is null.
+Each item also has a context field: the text around the quote in the source. You may use it to confirm WHO said something (attribution) and to keep that speaker's name in the claim; the facts themselves must still be in the quote or the context.
 Also use verdict partial, with a rewrite, when the claim text refers to "the quote", "the text" or "a speaker", or uses a vague pronoun instead of naming the investor, firm or company; the rewrite must name them. The investor and firm are given in the first line of the input.
 Return one verdict per id.`;
 

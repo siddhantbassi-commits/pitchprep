@@ -2,8 +2,9 @@
 
 import { z } from 'zod';
 import { Meter, grounded, structured, type GroundedResult } from './gemini';
+import { checkTalkingPoints } from './assist';
 import { buildEvidence } from './sources';
-import { gate, isVague, sectionConfidence } from './verify';
+import { gate, isVague, mentionsSubject, sectionConfidence } from './verify';
 import { COLLECTORS, EXTRACT_SYSTEM, JUDGE_SYSTEM, collectorPrompt, extractPrompt, synthesisPrompt, synthesisSystem } from './prompts';
 import { addDays, isoDay } from './text';
 import { Extraction, SECTIONS, Synthesis, type BriefResult, type Claim, type FounderProfile, type Section, type StageState } from './types';
@@ -21,6 +22,15 @@ export interface Hooks {
 }
 
 const HARD_DEADLINE_MS = 115_000;
+
+/** The text around a claim's quote in its source, so the fact-checker can confirm who said it. */
+function contextAround(c: { quote: string; evidenceIds: string[] }, evidence: { id: string; text: string }[]): string {
+  const e = evidence.find((x) => c.evidenceIds.includes(x.id));
+  if (!e) return '';
+  const i = e.text.toLowerCase().indexOf(c.quote.toLowerCase().slice(0, 40));
+  if (i < 0) return e.text.slice(0, 500);
+  return e.text.slice(Math.max(0, i - 350), i + c.quote.length + 250).replace(/\s+/g, ' ');
+}
 
 const STAGE_DEFS: { key: string; label: string }[] = [
   { key: 'collect', label: 'Searching the live web (portfolio, thesis, context, firm)' },
@@ -117,7 +127,7 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
       const j = await structured(
         Judgement,
         JUDGE_SYSTEM,
-        `Investor: ${name} at ${firm}\n\n` + survivors.map((c) => `id=${c.id}\nclaim: ${c.text}\nquote: ${c.quote}`).join('\n\n'),
+        `Investor: ${name} at ${firm}\n\n` + survivors.map((c) => `id=${c.id}\nclaim: ${c.text}\nquote: ${c.quote}\nsource: ${c.evidenceIds.map((id) => evidence.find((e) => e.id === id)?.domain).filter(Boolean).join(', ')}\ncontext: ${contextAround(c, evidence)}`).join('\n\n'),
         meter,
         Math.min(20_000, left() - 8_000),
       );
@@ -141,6 +151,8 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
   }
   // After the fact-checker has had its chance to rewrite, anything still vague ("a speaker", "the quote", a bare pronoun) is dropped.
   claims = claims.map((c) => (c.verified && isVague(c.text) ? { ...c, verified: false, dropReason: 'vague_wording' } : c));
+  // Re-check attribution after rewrites: a rewrite must not strip the speaker from a stated view.
+  claims = claims.map((c) => (c.verified && c.section === 'thesis' && c.kind === 'statement' && !mentionsSubject(c.text, name, firm) ? { ...c, verified: false, dropReason: 'unattributed_statement' } : c));
   if (g.olderDealsOmitted) notes.push(`${g.olderDealsOmitted} older deal${g.olderDealsOmitted > 1 ? 's' : ''} found outside the 90-day window and left out.`);
   const verified = claims.filter((c) => c.verified);
   await end('verify', 'done', `${verified.length} of ${claims.length} claims verified`);
@@ -171,6 +183,16 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
       s.questionsToAsk = (s.questionsToAsk ?? []).map((q) => ({ ...q, claimIds: q.claimIds.filter((id) => validIds.has(id)) })).slice(0, 3);
       if (s.talkingPoints.length === 3 && s.skim.length >= 1) synthesis = { ...s, skim: s.skim.slice(0, 3) };
     } catch { /* retry once */ }
+  }
+  // Fidelity pass: every statement about the investor in an opener or angle must stay inside the claims it cites.
+  if (synthesis && left() > 9_000) {
+    try {
+      const chk = await checkTalkingPoints(synthesis.talkingPoints, verified, input.profile, meter);
+      synthesis = { ...synthesis, talkingPoints: synthesis.talkingPoints.map((t, i) => ({ ...t, opener: chk.points[i].opener, angle: chk.points[i].angle })) };
+      if (chk.fixed) notes.push(`${chk.fixed} talking point${chk.fixed > 1 ? 's were' : ' was'} reworded after a fidelity check, so nothing is attributed to the investor beyond what the cited sources say.`);
+    } catch {
+      notes.push('The talking-point fidelity check did not complete in time; check each opener against its cited claims.');
+    }
   }
   if (!synthesis) notes.push('Talking points could not be generated within the time limit. The verified research above is complete.');
   await end('synthesize', synthesis ? 'done' : 'failed');

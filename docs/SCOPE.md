@@ -22,6 +22,7 @@ Priya -> name + firm -> `POST /api/briefs` -> job row in Supabase -> background 
 | Thinking level | `low` | Measured on the same deals prompt: 23 s versus 48 s at default. `minimal` is rejected by this model. |
 | Model | `gemini-3.8-flash` only | Exam rule (Gemini Flash, no Claude API). One env var. No Claude fallback anywhere in the repo, unlike TripSync. |
 | 90-day window | Enforced in code on the event date, else the article's own date | A model asked to "only include the last 90 days" cannot be trusted with date arithmetic. Deals with no date anywhere are shown separately as "date unconfirmed", never counted as recent. |
+| Attribution | Statements must name their speaker; openers attribute exactly as the claim does; vague wording is dropped in code | A second review of the output found a talking point turning an unnamed "speaker" into "you have noted". Prompt rules fix it at source; a code check ("a speaker", "the quote", a bare pronoun) is the backstop and is also an evaluation metric. |
 | Partly supported claims | Rewritten to the quote, flagged "narrowed to the source" | An independent spot-check found two claims with real quotes but invented detail ("existing backer", "Seed round"). The quote check cannot see that; the judge's rewrite can. See [model-comparison.md](model-comparison.md). |
 | Unverified claims | Dropped and listed with a reason | Better a shorter brief than a wrong fact; the list shows the user exactly what was held back. |
 | Access model | Signed-cookie private workspace, no login wall | A grader or a new user can run a brief immediately. Data is private per browser, with real deletion. Email sign-in can later attach to the same workspace. |
@@ -56,7 +57,7 @@ Priya will take 40 or more meetings over a raise, so the brief is the start of t
 **Trust and operations**
 - Per-claim "Wrong? / Outdated?" feedback; ops dashboard (time to brief, share under two minutes, cost per brief, verification rate, what the gate dropped); in-product **Evidence** page with the live evaluation results.
 - Evaluation harness (`npm run eval`): real, fake, mismatched and adversarial inputs; independent spot-check ([spot-check.md](spot-check.md)).
-- Real "delete my data" and per-brief delete; private signed-cookie workspaces; prompt-injection, SSRF and rate-limit protections (8 briefs per hour per browser, 15 per IP, 150 a day overall, to cap spend on a public demo); keep-alive and health checks.
+- **Privacy rights**: "Download my data" (portability) and "Delete all my data" (erasure) as real endpoints, plus per-brief delete; the private calendar link is **encrypted at rest** (AES-256-GCM) because it is a credential; private signed-cookie workspaces; prompt-injection, SSRF and rate-limit protections, security headers (no framing, no sniffing, strict transport, microphone for same origin only), robots.txt (8 briefs per hour per browser, 15 per IP, 150 a day overall, to cap spend on a public demo); keep-alive and health checks.
 - Accessible by design: skip link, labelled controls, keyboard shortcut (`/` to start typing), dark mode, reduced-motion support, print stylesheet for PDF.
 
 ## Not built, documented as roadmap

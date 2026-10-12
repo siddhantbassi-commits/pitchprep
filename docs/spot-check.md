@@ -28,3 +28,11 @@ After the fix the evaluation was re-run in full (see [eval-report.md](eval-repor
 
 ## What this does not establish
 Six checked claims cannot show an error rate. The point of the exercise was to find a failure mode the automated checks missed, and it did. Every claim in the product links to its source so that the user can do this check in one click.
+
+## Second review: attribution (found by reading the output, not by a check)
+After the follow-up and rehearsal features were added I read the finished example briefs end to end, as a professor would. One talking point opened with "You have noted that markets reward companies solving real problems", yet the claim behind it said only that "a speaker stated" this. An unnamed speaker's words were being put in the investor's mouth.
+
+No automated check existed for this, so three layers were added:
+1. The extractor must name who said a stated view, and must skip it if the evidence does not say.
+2. The talking-point writer must attribute exactly as the claim does ("Kalaari has said" for a firm-level statement; never "you said" unless the claim names the investor).
+3. A code check drops any claim that still says "a speaker", "the quote" or opens with a bare pronoun, and the evaluation reports the count of such claims (target 0).

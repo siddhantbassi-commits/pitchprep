@@ -89,6 +89,7 @@ export default function Evidence() {
       <div className="card mt-3 p-5 text-sm space-y-2">
         <p>After the first evaluation I opened the cited pages myself for 12 sampled claims. Six could be opened. <strong>Four were exactly right. Two carried a detail the source never states</strong> (an investor called an &ldquo;existing backer&rdquo;, a round called &ldquo;Seed&rdquo;), even though their quotes were genuine.</p>
         <p>The quote check could not see that, because the invented detail sat in the claim wording, not the quote. The fix: the fact-checking pass now rewrites any partly supported claim down to what the quote states, and the extractor is told not to add details. Briefs show this as &ldquo;narrowed to the source&rdquo;. Six checked claims cannot give an error rate; they found a failure mode the automated checks missed, which was the point.</p>
+        <p>A later read-through found a second flaw no check had been written for: a talking point attributed an unnamed speaker's words to the investor. It now has three layers of defence (extractor, writer, and a code check that is also an evaluation metric).</p>
         <p><a className="underline" href={`${REPO}/blob/main/docs/spot-check.md`} target="_blank" rel="noopener noreferrer">Read the full spot-check</a></p>
       </div>
 

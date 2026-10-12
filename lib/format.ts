@@ -11,6 +11,7 @@ export const DROP_LABEL: Record<string, string> = {
   quote_not_found_in_source: 'Quote could not be matched to the source text',
   stale_over_24_months: 'Older than 24 months',
   judge_unsupported: 'Fact-check found the source did not support it',
+  unattributed_statement: 'Stated view that does not name the investor or firm as the speaker',
   vague_wording: 'Wording too vague to stand on its own',
   duplicate: 'Duplicate',
   source_not_about_subject: 'Source is not about this investor',

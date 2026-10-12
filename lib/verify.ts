@@ -39,6 +39,9 @@ export function gate(input: GateInput): { claims: Claim[]; olderDealsOmitted: nu
     if (!cited.some((e) => quoteInText(c.quote, e.text))) return drop('quote_not_found_in_source');
     if (!cited.some((e) => mentionsSubject(e.text, input.name, input.firm))) return drop('source_not_about_subject');
 
+    // A stated view must name its speaker: the investor or their firm. Otherwise an unnamed voice would be passed off as theirs.
+    if (c.section === 'thesis' && c.kind === 'statement' && !mentionsSubject(c.text, input.name, input.firm)) return drop('unattributed_statement');
+
     // Date logic. The model's date is accepted only if it parses; otherwise fall back to the article's own date.
     const claimDate = parseDate(c.eventDate);
     const articleDate = cited.map((e) => e.publishedAt).filter((d): d is string => !!d).sort().slice(-1)[0] ?? null;
