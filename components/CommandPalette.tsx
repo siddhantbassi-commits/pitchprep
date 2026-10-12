@@ -7,6 +7,8 @@ interface Item { id: string; label: string; hint: string; href: string }
 
 const PAGES: Item[] = [
   { id: 'p-new', label: 'New brief', hint: 'Research an investor', href: '/' },
+  { id: 'p-disc', label: 'Discover', hint: 'Who should I pitch?', href: '/discover' },
+  { id: 'p-raise', label: 'Raise', hint: 'Round progress, dilution, who is in', href: '/raise' },
   { id: 'p-pipe', label: 'Pipeline', hint: 'Every investor, ranked by fit', href: '/pipeline' },
   { id: 'p-meet', label: 'Meetings', hint: 'Calendar and email nudges', href: '/meetings' },
   { id: 'p-hist', label: 'History', hint: 'Your briefs', href: '/briefs' },

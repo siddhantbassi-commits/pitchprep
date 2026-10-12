@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 interface Prefs {
   email: string; verified: boolean; enabled: boolean;
-  brief_ready: boolean; pre_meeting: boolean; follow_up: boolean; overdue: boolean; daily_digest: boolean; lead_minutes: number;
+  brief_ready: boolean; pre_meeting: boolean; follow_up: boolean; overdue: boolean; daily_digest: boolean; bump: boolean; weekly: boolean; lead_minutes: number;
 }
 
 const TOGGLES: { key: keyof Prefs; label: string; hint: string; preview: string }[] = [
@@ -13,6 +13,8 @@ const TOGGLES: { key: keyof Prefs; label: string; hint: string; preview: string 
   { key: 'follow_up', label: 'Follow-up reminder', hint: 'The morning after a meeting, if no follow-up is logged yet.', preview: 'follow_up' },
   { key: 'overdue', label: 'Overdue next steps', hint: 'One email a morning when next steps in your pipeline have passed their date.', preview: 'overdue' },
   { key: 'daily_digest', label: "Today's meetings", hint: 'One email in the early morning on days with investor meetings.', preview: 'digest' },
+  { key: 'bump', label: 'Gentle bump', hint: 'A week after a follow-up with no movement: a short draft you can send. One a day at most.', preview: 'bump' },
+  { key: 'weekly', label: 'Monday summary', hint: 'Your week: meetings held and coming, follow-ups to send, overdue steps and how full the round is.', preview: 'weekly' },
 ];
 
 export default function NudgesPanel({ banner }: { banner?: string }) {

@@ -10,7 +10,7 @@ export const maxDuration = 30;
 
 const view = (p: Awaited<ReturnType<typeof getPrefs>>) => p && ({
   email: p.email, verified: !!p.verified_at, enabled: p.enabled, brief_ready: p.brief_ready, pre_meeting: p.pre_meeting,
-  follow_up: p.follow_up, overdue: p.overdue, daily_digest: p.daily_digest, lead_minutes: p.lead_minutes,
+  follow_up: p.follow_up, overdue: p.overdue, daily_digest: p.daily_digest, bump: p.bump, weekly: p.weekly, lead_minutes: p.lead_minutes,
 });
 
 export async function GET() {
@@ -37,7 +37,7 @@ export async function POST(req: Request) {
 
 const Toggles = z.object({
   enabled: z.boolean().optional(), brief_ready: z.boolean().optional(), pre_meeting: z.boolean().optional(), follow_up: z.boolean().optional(),
-  overdue: z.boolean().optional(), daily_digest: z.boolean().optional(), lead_minutes: z.number().int().min(30).max(360).optional(),
+  overdue: z.boolean().optional(), daily_digest: z.boolean().optional(), bump: z.boolean().optional(), weekly: z.boolean().optional(), lead_minutes: z.number().int().min(30).max(360).optional(),
 });
 
 export async function PUT(req: Request) {

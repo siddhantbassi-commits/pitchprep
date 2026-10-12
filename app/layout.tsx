@@ -18,11 +18,11 @@ export const viewport: Viewport = { width: 'device-width', initialScale: 1, them
 
 const nav = [
   { href: '/', label: 'New brief' },
+  { href: '/discover', label: 'Discover' },
   { href: '/pipeline', label: 'Pipeline' },
+  { href: '/raise', label: 'Raise' },
   { href: '/meetings', label: 'Meetings' },
   { href: '/briefs', label: 'History' },
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/method', label: 'How it works' },
   { href: '/settings', label: 'My startup' },
 ];
 
@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <footer className="no-print border-t border-line text-xs text-muted">
           <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row gap-2 justify-between">
             <p>Built from public, professional information only. Every claim is quoted from a source and checked before it is shown. AI by Gemini Flash.</p>
-            <p>PitchPrep is a research aid. Verify anything critical before you rely on it. <a className="underline" href="/evidence">See the evidence</a> · <a className="underline" href="https://github.com/siddhantbassi-commits/pitchprep" target="_blank" rel="noopener noreferrer">Source code</a></p>
+            <p>PitchPrep is a research aid. Verify anything critical before you rely on it.<br /><a className="underline" href="/method">How it works</a> · <a className="underline" href="/evidence">Evidence</a> · <a className="underline" href="/dashboard">Dashboard</a> · <a className="underline" href="https://github.com/siddhantbassi-commits/pitchprep" target="_blank" rel="noopener noreferrer">Source code</a></p>
           </div>
         </footer>
       </body>

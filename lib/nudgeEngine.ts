@@ -1,10 +1,11 @@
 // Decides which nudges are due. Pure: it reads a snapshot and returns what to send, so every rule is unit-tested.
 // Rules: brief ready (once per meeting), refreshed brief shortly before a meeting (once), a follow-up reminder the morning
-// after (once), an overdue next-steps digest (once a day) and a morning digest of today's meetings (once a day).
+// after (once), an overdue next-steps digest (once a day), a morning digest of today's meetings (once a day), a gentle bump a week
+// after a follow-up that got no reply (one a day at most), and a Monday summary of the week.
 
 export interface Prefs {
   enabled: boolean; verified: boolean;
-  brief_ready: boolean; pre_meeting: boolean; follow_up: boolean; overdue: boolean; daily_digest: boolean;
+  brief_ready: boolean; pre_meeting: boolean; follow_up: boolean; overdue: boolean; daily_digest: boolean; bump: boolean; weekly: boolean;
   lead_minutes: number;
 }
 
@@ -15,25 +16,29 @@ export interface MeetingLite {
 
 export interface BriefLite { id: string; status: 'running' | 'complete' | 'partial' | 'unverified' | 'failed'; ageMinutes: number }
 
-export interface NoteLite { investor_key: string; investor_name: string; firm: string; status: string; next_step: string; next_step_on: string | null }
+export interface NoteLite { investor_key: string; investor_name: string; firm: string; status: string; next_step: string; next_step_on: string | null; updated_at?: string | null }
 
-export type Kind = 'brief_ready' | 'pre_meeting' | 'follow_up' | 'overdue' | 'digest';
+export type Kind = 'brief_ready' | 'pre_meeting' | 'follow_up' | 'overdue' | 'digest' | 'bump' | 'weekly';
 export interface Due { kind: Kind; ref: string; meetingId?: string; investorKey?: string }
 
 export interface Snapshot {
   now: Date; prefs: Prefs; meetings: MeetingLite[]; notes: NoteLite[]; briefs: Record<string, BriefLite>;
   sent: Set<string>; // "kind|ref"
+  hasRaise?: boolean; // the founder has set up a round, so the weekly summary has something to say about it
 }
 
 export const STALE_AFTER_MIN = 180;      // a brief older than this is refreshed before the meeting
 export const SEND_ANYWAY_WITHIN_MIN = 40; // ... but if the refresh is not done this close to the meeting, send what we have
 export const MORNING_FROM_IST = 8;
 export const MORNING_TO_IST = 12;
+export const BUMP_AFTER_DAYS = 7;   // a follow-up with no movement for this long earns a gentle bump
+export const BUMP_GIVE_UP_DAYS = 45; // ... but not forever
 
 export const investorKey = (name: string, firm: string) => `${name.trim().toLowerCase().replace(/\s+/g, ' ')}|${firm.trim().toLowerCase().replace(/\s+/g, ' ')}`;
 const ist = (d: Date) => new Date(d.getTime() + 5.5 * 3600_000);
 export const istHour = (d: Date) => ist(d).getUTCHours();
 export const istDate = (d: Date) => ist(d).toISOString().slice(0, 10);
+export const istWeekday = (d: Date) => ist(d).getUTCDay(); // 0 = Sunday, 1 = Monday
 const minutesUntil = (iso: string, now: Date) => (Date.parse(iso) - now.getTime()) / 60_000;
 const key = (k: string, r: string) => `${k}|${r}`;
 
@@ -89,5 +94,24 @@ export function plan(s: Snapshot): Plan {
     const todays = investors.filter((m) => istDate(new Date(m.starts_at)) === today && minutesUntil(m.starts_at, s.now) > 0);
     if (todays.length) out.send.push({ kind: 'digest', ref: today });
   }
+
+  // 6. A bump: a follow-up was sent a week or more ago and nothing has moved since. One bump a day, one per follow-up state.
+  if (p.bump && morning && ![...s.sent].some((k) => k.startsWith(`bump|${today}|`))) {
+    const due = s.notes
+      .filter((n) => n.status === 'followed_up' && n.updated_at)
+      .map((n) => ({ n, days: (s.now.getTime() - Date.parse(n.updated_at!)) / 86_400_000 }))
+      .filter((x) => x.days >= BUMP_AFTER_DAYS && x.days <= BUMP_GIVE_UP_DAYS && !(x.n.next_step_on && x.n.next_step_on >= today))
+      .filter((x) => !bumpSent(s.sent, x.n))
+      .sort((a, b) => b.days - a.days);
+    if (due.length) out.send.push({ kind: 'bump', ref: bumpRef(today, due[0].n), investorKey: due[0].n.investor_key });
+  }
+
+  // 7. The Monday summary: last week, this week, and the round.
+  if (p.weekly && morning && istWeekday(s.now) === 1 && !s.sent.has(key('weekly', today)) && (s.notes.length > 0 || investors.length > 0 || s.hasRaise)) out.send.push({ kind: 'weekly', ref: today });
   return out;
 }
+
+const stateDay = (n: NoteLite) => (n.updated_at ?? '').slice(0, 10);
+/** One bump per follow-up state: the ref carries the day the note last changed, so editing the note re-arms it. */
+export const bumpRef = (today: string, n: NoteLite) => `${today}|${n.investor_key}|${stateDay(n)}`;
+const bumpSent = (sent: Set<string>, n: NoteLite) => [...sent].some((k) => k.startsWith('bump|') && k.endsWith(`|${n.investor_key}|${stateDay(n)}`));

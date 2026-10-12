@@ -83,3 +83,18 @@ Telegram as a second nudge channel, recurring-event expansion in the calendar re
 - `gemini-3.8-flash`: newest stable Flash. Paid-tier list price $0.75 / $3.75 per million input / output tokens through 31 Dec 2026.
 - Grounding with Google Search: not available on the free tier; paid tier includes 5,000 free searches a month, then $14 per 1,000.
 - Paid tier content is not used to improve Google products; free tier content may be. The demo uses a paid-tier key.
+
+## Added after the core brief: finding investors, practising, and running the raise
+
+The brief answers "what do I say to this investor?". A founder also needs "who should I talk to?", "am I ready?" and "how is the round going?". Each is built with the same rule: the model may propose, code verifies.
+
+| Feature | What the model does | What code does |
+|---|---|---|
+| **Discover** | Searches (grounded) and extracts firms, deals and quotes | Keeps a deal only if the quote is in the source and names the firm, the company is in the source, and the date is inside 200 days; refuses "earlier this year" mentions an article date; ranks by recency, category and stage; `npm run discover` re-audits every deal |
+| **Mock meeting** | Plays the investor from verified claims only; scores four dimensions 1-5 | Overall score is arithmetic; the "strongest moment" must be a verbatim quote; figures compared with the profile; turn order and counts validated server side; rate limited |
+| **Raise cockpit** | Nothing | All arithmetic: progress, coverage, dilution, founder stake, runway, warnings; odds are labelled assumptions she can edit |
+| **Pitch readiness** | Nothing | 11 keyword rules over her profile |
+| **Forwardable intro** | Writes the note and the third-person blurb | Flags figures, placeholders and any sentence that characterises the investor's interests |
+| **Bump and Monday summary** | Drafts the bump from her notes | Decides when (7 to 45 days after a follow-up, nothing scheduled, one a day, one per follow-up state); withholds a draft containing any untraceable figure; builds the summary from her data |
+
+Not built on purpose: predicting who will invest (nothing supports it), scraping LinkedIn for mutual connections (see the nine checks), and a public sign-up flow, which would change the privacy model and is the next step if this leaves the classroom.

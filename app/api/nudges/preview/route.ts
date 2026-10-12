@@ -5,7 +5,7 @@ import { currentWorkspace, getProfile } from '@/lib/store';
 import type { BriefResult } from '@/lib/types';
 
 export const dynamic = 'force-dynamic';
-const KINDS: NudgeKind[] = ['brief_ready', 'pre_meeting', 'follow_up', 'overdue', 'digest', 'confirm', 'signin', 'test'];
+const KINDS: NudgeKind[] = ['brief_ready', 'pre_meeting', 'follow_up', 'overdue', 'digest', 'bump', 'weekly', 'confirm', 'signin', 'test'];
 
 // Shows exactly what an email looks like, built from the founder's latest real brief (or an example), without sending anything.
 export async function GET(req: Request) {
@@ -22,6 +22,8 @@ export async function GET(req: Request) {
     newSince: kind === 'pre_meeting' ? ['(In a real email: events dated after your last brief appear here.)'] : undefined,
     overdue: [{ investor: r?.investor.name ?? 'An investor', nextStep: 'Send the cohort retention data', due: '2026-10-10' }],
     today: [{ investor: r?.investor.name ?? 'An investor', firm: r?.investor.firm ?? '', time: '11:00 IST', briefReady: true }],
+    bump: { investor: r?.investor.name ?? 'An investor', firm: r?.investor.firm ?? 'Their firm', days: 8, draft: { subject: 'Quick update from Sattva Kitchen', body: `Hi ${(r?.investor.name ?? 'there').split(' ')[0]},\n\nA quick note since I sent over the cohort data last week. (In a real email this is drafted from your own notes and verified facts about the investor, never invented.)\n\nHappy to answer anything, and no problem at all if the timing is not right.\n\nBest,\n${(await getProfile(ws)).founderName}` } },
+    weekly: { held: [`${r?.investor.name ?? 'An investor'} (${r?.investor.firm ?? 'Their firm'})`], upcoming: [`${r?.investor.name ?? 'An investor'}, 11:00 IST on 20 Oct`], pendingFollowUps: ['(Investors you have met but not yet followed up with appear here.)'], overdue: ['A next step that passed its date appears here.'], pipeline: '2 researching, 1 meeting booked, 1 met', raise: 'Your committed amount against your target appears here once you set up your round on the Raise page' },
     followUpFor: r?.investor.name, openUrl: '#', unsubscribeUrl: '#', confirmUrl: '#',
   });
   return new Response(mail.html, { headers: { 'content-type': 'text/html; charset=utf-8', 'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'", 'cache-control': 'no-store' } });

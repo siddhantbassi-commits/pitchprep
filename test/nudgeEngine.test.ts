@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { istDate, istHour, plan, type MeetingLite, type Prefs, type Snapshot } from '../lib/nudgeEngine';
 
-const prefs: Prefs = { enabled: true, verified: true, brief_ready: true, pre_meeting: true, follow_up: true, overdue: true, daily_digest: true, lead_minutes: 120 };
+const prefs: Prefs = { enabled: true, verified: true, brief_ready: true, pre_meeting: true, follow_up: true, overdue: true, daily_digest: true, bump: true, weekly: true, lead_minutes: 120 };
 const T = (iso: string) => new Date(iso);
 const meeting = (o: Partial<MeetingLite> = {}): MeetingLite => ({ id: 'm1', starts_at: '2026-10-13T05:30:00.000Z', title: 'Intro', status: 'prepared', is_investor: true, investor_name: 'Kirsten Green', firm: 'Forerunner Ventures', brief_id: 'b1', ...o });
 const DIGEST_DONE = 'digest|2026-10-13'; // keeps the morning digest out of tests about other nudges
@@ -83,4 +83,38 @@ test('inside the lead window with a stale brief: start the refresh and do NOT se
   const close = plan(snap({ now: T('2026-10-13T04:55:00Z'), briefs: stale, sent: new Set(['brief_ready|m1', DIGEST_DONE]) })); // 35 min before, too late to refresh
   assert.deepEqual(close.refresh, []);
   assert.deepEqual(close.send.map((d) => d.kind), ['pre_meeting']);
+});
+
+test('a bump is offered a week after a follow-up with no movement: one a day, one per follow-up, never while a next step is scheduled', () => {
+  const note = (o: Record<string, unknown> = {}) => ({ investor_key: 'a|b', investor_name: 'A', firm: 'B', status: 'followed_up', next_step: '', next_step_on: null, updated_at: '2026-10-03T10:00:00Z', ...o });
+  const morning = T('2026-10-12T04:00:00Z'); // Monday 09:30 IST, follow-up was 9 days ago
+  const bump = (s: Snapshot) => plan(s).send.filter((d) => d.kind === 'bump');
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note()] })).length, 1);
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note({ updated_at: '2026-10-08T10:00:00Z' })] })).length, 0); // only 4 days
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note({ updated_at: '2026-08-01T10:00:00Z' })] })).length, 0); // given up
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note({ status: 'in_talks' })] })).length, 0);
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note({ next_step_on: '2026-10-20' })] })).length, 0); // something is scheduled
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note()], prefs: { ...prefs, bump: false } })).length, 0);
+  assert.equal(bump(snap({ now: T('2026-10-12T12:00:00Z'), meetings: [], notes: [note()] })).length, 0); // afternoon
+  const first = bump(snap({ now: morning, meetings: [], notes: [note()] }))[0];
+  const ledger = new Set([`bump|${first.ref}`]);
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: [note()], sent: ledger })).length, 0); // already bumped this state
+  assert.equal(bump(snap({ now: T('2026-10-13T04:00:00Z'), meetings: [], notes: [note()], sent: ledger })).length, 0); // ... even a day later
+  const two = [note(), note({ investor_key: 'c|d', investor_name: 'C', firm: 'D', updated_at: '2026-10-01T10:00:00Z' })];
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: two }))[0].investorKey, 'c|d'); // oldest first
+  assert.equal(bump(snap({ now: morning, meetings: [], notes: two, sent: ledger })).length, 0); // one a day
+  assert.equal(bump(snap({ now: T('2026-10-13T04:00:00Z'), meetings: [], notes: two, sent: new Set([`bump|2026-10-12|c|d|2026-10-01`]) })).length, 1); // next day: the other one
+  assert.equal(bump(snap({ now: T('2026-10-14T04:00:00Z'), meetings: [], notes: [note({ updated_at: '2026-10-05T10:00:00Z' })], sent: ledger })).length, 1); // note edited since and quiet again: re-armed
+});
+
+test('the Monday summary goes out once, on Monday mornings, only when there is something to say', () => {
+  const weekly = (s: Snapshot) => plan(s).send.filter((d) => d.kind === 'weekly');
+  const mon = T('2026-10-12T04:00:00Z'); // Monday 09:30 IST
+  const n = { investor_key: 'a|b', investor_name: 'A', firm: 'B', status: 'met', next_step: '', next_step_on: null };
+  assert.equal(weekly(snap({ now: mon, meetings: [], notes: [n] })).length, 1);
+  assert.equal(weekly(snap({ now: T('2026-10-13T04:00:00Z'), meetings: [], notes: [n] })).length, 0); // Tuesday
+  assert.equal(weekly(snap({ now: mon, meetings: [], notes: [n], sent: new Set(['weekly|2026-10-12']) })).length, 0);
+  assert.equal(weekly(snap({ now: mon, meetings: [], notes: [] })).length, 0); // nothing to report
+  assert.equal(weekly(snap({ now: mon, meetings: [], notes: [], hasRaise: true })).length, 1); // a round counts
+  assert.equal(weekly(snap({ now: mon, meetings: [], notes: [n], prefs: { ...prefs, weekly: false } })).length, 0);
 });

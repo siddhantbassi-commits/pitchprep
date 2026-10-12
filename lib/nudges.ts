@@ -6,6 +6,12 @@ import { db, logEvent } from './db';
 import { computeDelta } from './delta';
 import { renderEmail, type EmailData, type NudgeKind } from './emailTemplates';
 import { mailerConfigured, sendMail, EMAIL_RE } from './mailer';
+import { draftBump } from './assist';
+import { Meter } from './gemini';
+import { getPlan, listCommitments } from './raiseStore';
+import { fmtMoney, summarize } from './raise';
+import { istTime } from './emailTemplates';
+import { STATUS_LABEL, STATUSES, type Status } from './tracker';
 import { investorKey, plan, type BriefLite, type MeetingLite, type NoteLite, type Prefs } from './nudgeEngine';
 import { allow, createBrief, getProfile, latestPrevious } from './store';
 import { signToken } from './tokens';
@@ -20,14 +26,14 @@ const hash = (s: string) => createHash('sha256').update(s.toLowerCase()).digest(
 
 export interface PrefsRow {
   workspace_id: string; email: string; verified_at: string | null; verify_sent_at: string | null; enabled: boolean;
-  brief_ready: boolean; pre_meeting: boolean; follow_up: boolean; overdue: boolean; daily_digest: boolean; lead_minutes: number;
+  brief_ready: boolean; pre_meeting: boolean; follow_up: boolean; overdue: boolean; daily_digest: boolean; bump: boolean; weekly: boolean; lead_minutes: number;
 }
 
 export async function getPrefs(ws: string): Promise<PrefsRow | null> {
   return ((await db().from('nudge_prefs').select('*').eq('workspace_id', ws).maybeSingle()).data as PrefsRow | null) ?? null;
 }
 
-const toPrefs = (r: PrefsRow): Prefs => ({ enabled: r.enabled, verified: !!r.verified_at, brief_ready: r.brief_ready, pre_meeting: r.pre_meeting, follow_up: r.follow_up, overdue: r.overdue, daily_digest: r.daily_digest, lead_minutes: r.lead_minutes });
+const toPrefs = (r: PrefsRow): Prefs => ({ enabled: r.enabled, verified: !!r.verified_at, brief_ready: r.brief_ready, pre_meeting: r.pre_meeting, follow_up: r.follow_up, overdue: r.overdue, daily_digest: r.daily_digest, bump: r.bump, weekly: r.weekly, lead_minutes: r.lead_minutes });
 
 /** Daily caps protect the sending account and the recipient: per workspace and across the site. */
 async function underCaps(ws: string): Promise<boolean> {
@@ -94,18 +100,19 @@ export async function runNudges(now = new Date(), base?: string): Promise<RunSum
     out.workspaces++;
     const ws = pr.workspace_id;
     try {
-      const from = new Date(now.getTime() - 4 * 86_400_000).toISOString();
-      const to = new Date(now.getTime() + 2 * 86_400_000).toISOString();
+      const from = new Date(now.getTime() - 8 * 86_400_000).toISOString();
+      const to = new Date(now.getTime() + 8 * 86_400_000).toISOString();
       const meetings = ((await db().from('meetings').select('id,starts_at,title,status,is_investor,investor_name,firm,brief_id').eq('workspace_id', ws).gte('starts_at', from).lte('starts_at', to)).data ?? []) as MeetingLite[];
-      const notes = ((await db().from('investor_notes').select('investor_key,investor_name,firm,status,next_step,next_step_on').eq('workspace_id', ws)).data ?? []) as NoteLite[];
+      const notes = ((await db().from('investor_notes').select('investor_key,investor_name,firm,status,notes,next_step,next_step_on,updated_at').eq('workspace_id', ws)).data ?? []) as (NoteLite & { notes: string })[];
       const briefIds = meetings.map((m) => m.brief_id).filter((x): x is string => !!x);
       const briefRows = briefIds.length ? (((await db().from('briefs').select('id,status,created_at,completed_at').in('id', briefIds)).data ?? []) as { id: string; status: BriefLite['status']; created_at: string; completed_at: string | null }[]) : [];
       const briefs: Record<string, BriefLite> = Object.fromEntries(briefRows.map((b) => [b.id, { id: b.id, status: b.status, ageMinutes: (now.getTime() - Date.parse(b.completed_at ?? b.created_at)) / 60_000 }]));
-      const since = new Date(now.getTime() - 6 * 86_400_000).toISOString();
+      const since = new Date(now.getTime() - 50 * 86_400_000).toISOString(); // long enough to remember a bump for as long as bumps can happen
       const ledger = ((await db().from('nudges_sent').select('kind,ref').eq('workspace_id', ws).gte('sent_at', since)).data ?? []) as { kind: string; ref: string }[];
       const sent = new Set(ledger.map((l) => `${l.kind}|${l.ref}`));
 
-      const p = plan({ now, prefs: toPrefs(pr), meetings, notes, briefs, sent });
+      const raisePlan = pr.weekly ? await getPlan(ws) : null;
+      const p = plan({ now, prefs: toPrefs(pr), meetings, notes, briefs, sent, hasRaise: !!raisePlan && raisePlan.target > 0 });
       const record = async (kind: string, ref: string, ok = true, error?: string) => { await db().from('nudges_sent').upsert({ workspace_id: ws, kind, ref, ok, error: error ?? null }, { onConflict: 'workspace_id,kind,ref', ignoreDuplicates: true }); };
 
       // Refresh stale briefs shortly before a meeting; the nudge follows once the refresh has finished.
@@ -127,6 +134,37 @@ export async function runNudges(now = new Date(), base?: string): Promise<RunSum
           const today = new Date(now.getTime() + 5.5 * 3_600_000).toISOString().slice(0, 10);
           const late = notes.filter((n) => n.next_step.trim() && n.next_step_on && n.next_step_on < today && n.status !== 'passed');
           outcome = await deliver(ws, pr.email, { kind: 'overdue', overdue: late.map((n) => ({ investor: n.investor_name, nextStep: n.next_step, due: n.next_step_on! })), next: '/pipeline' }, base);
+        } else if (d.kind === 'bump') {
+          const n = notes.find((x) => x.investor_key === d.investorKey);
+          if (!n) continue;
+          const days = Math.floor((now.getTime() - Date.parse(n.updated_at!)) / 86_400_000);
+          const latest = (await db().from('briefs').select('result').eq('workspace_id', ws).eq('investor_key', n.investor_key).in('status', ['complete', 'partial']).order('created_at', { ascending: false }).limit(1)).data?.[0];
+          let draft: { subject: string; body: string } | null = null;
+          try { draft = await draftBump({ investor: n.investor_name, firm: n.firm, days, notes: n.notes, nextStep: n.next_step, result: (latest?.result as BriefResult | undefined) ?? null, profile: await getProfile(ws), meter: new Meter() }); } catch { draft = null; }
+          outcome = await deliver(ws, pr.email, { kind: 'bump', bump: { investor: n.investor_name, firm: n.firm, days, draft }, next: '/pipeline' }, base);
+        } else if (d.kind === 'weekly') {
+          const today = new Date(now.getTime() + 5.5 * 3_600_000).toISOString().slice(0, 10);
+          const t = now.getTime();
+          const who = (m: MeetingLite) => `${m.investor_name ?? m.title ?? 'Meeting'}${m.firm ? ` (${m.firm})` : ''}`;
+          const inv = meetings.filter((m) => m.is_investor || m.status === 'prepared');
+          const counts = STATUSES.map((st) => ({ st, n: notes.filter((x) => x.status === st).length })).filter((x) => x.n);
+          let raise: string | null = null;
+          if (raisePlan && raisePlan.target > 0) {
+            const s = summarize(raisePlan, await listCommitments(ws), now);
+            raise = `${fmtMoney(raisePlan.currency, s.committed)} committed of ${fmtMoney(raisePlan.currency, raisePlan.target)} (${s.pctCommitted}%), ${s.investorsActive} investor${s.investorsActive === 1 ? '' : 's'} active${s.daysLeft != null && s.daysLeft >= 0 ? `, ${s.daysLeft} days to your close-by date` : ''}`;
+          }
+          outcome = await deliver(ws, pr.email, {
+            kind: 'weekly',
+            weekly: {
+              held: inv.filter((m) => Date.parse(m.starts_at) <= t && Date.parse(m.starts_at) > t - 7 * 86_400_000).map(who),
+              upcoming: inv.filter((m) => Date.parse(m.starts_at) > t && Date.parse(m.starts_at) <= t + 7 * 86_400_000).sort((a, b) => a.starts_at.localeCompare(b.starts_at)).map((m) => `${who(m)}, ${istTime(m.starts_at)}`),
+              pendingFollowUps: notes.filter((x) => x.status === 'met').map((x) => `${x.investor_name} (${x.firm})`),
+              overdue: notes.filter((x) => x.next_step.trim() && x.next_step_on && x.next_step_on < today && x.status !== 'passed').map((x) => `${x.investor_name}: ${x.next_step} (was due ${x.next_step_on})`),
+              pipeline: counts.map((x) => `${x.n} ${STATUS_LABEL[x.st as Status].toLowerCase()}`).join(', '),
+              raise,
+            },
+            next: raise ? '/raise' : '/pipeline',
+          }, base);
         } else if (d.kind === 'digest') {
           const today = new Date(now.getTime() + 5.5 * 3_600_000).toISOString().slice(0, 10);
           const todays = meetings.filter((m) => (m.is_investor || m.status === 'prepared') && new Date(Date.parse(m.starts_at) + 5.5 * 3_600_000).toISOString().slice(0, 10) === today && Date.parse(m.starts_at) > now.getTime());

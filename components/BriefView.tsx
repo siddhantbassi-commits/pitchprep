@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import type { BriefResult, Claim, Confidence, Evidence, FounderProfile, Section, StageState } from '@/lib/types';
 import AfterMeeting from './AfterMeeting';
 import MeetingCard from './MeetingCard';
+import MockMeeting from './MockMeeting';
 import Rehearse from './Rehearse';
 import VerifyList from './VerifyList';
 import FreshnessChip from './FreshnessChip';
@@ -303,6 +304,8 @@ function Brief({ data, result, onRegenerate }: { data: BriefData; result: BriefR
           </div>
         </section>
       )}
+
+      {canAssist && result.status !== 'unverified' && <MockMeeting briefId={data.id} investor={result.investor.name} />}
 
       {syn && (syn.questionsToAsk ?? []).length > 0 && (
         <section className="mt-8" aria-labelledby="qa">

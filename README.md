@@ -36,9 +36,10 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 71 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption, nudge scheduling, signed links, email templates) |
+| `npm test` | 101 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption, nudge scheduling incl. bump and weekly rules, signed links, email templates, investor discovery verification and ranking, mock-meeting scoring, raise arithmetic, pitch-readiness rules) |
 | `npm run seed` | Generate the example briefs shown on the home page (live data; a thin run is retried up to twice, unlike the evaluation, which is never filtered) |
 | `npm run cal-test -- file.ics` | Test investor-meeting detection on a calendar file |
+| `npm run discover -- "focus"` | Run investor discovery in the terminal and re-audit every deal against its source |
 | `npm run run -- "Name" "Firm"` | Run the whole pipeline in the terminal, no database needed |
 | `npm run eval` | Golden-set evaluation (writes docs/eval-report.md) |
 | `npm run typecheck` | TypeScript check |
@@ -48,9 +49,12 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 
 ## Beyond the brief
 Not just a brief: the whole fundraising workflow around it.
+- **Find:** **Discover** answers "who should I pitch?": investors who recently backed startups like hers, each deal with its date, exact quote and source, ranked by code. A **pitch readiness check** lists the numbers investors will ask for that her profile is missing.
 - **Before:** founder profile, cited and quoted claims, fit snapshot, questions to ask *them*, phone-friendly **meeting card**, **calendar link** that finds investor meetings and prepares briefs automatically (try it with a sample calendar), compared-with-last-time panel.
+- **Practise:** a five-question **mock meeting** with a simulated investor (friendly or tough) that uses only verified facts, then a scorecard in which every figure she quoted is checked against her profile and the "strongest moment" must be a verbatim quote.
 - **After:** investor **pipeline** ranked by fit with status, next step and notes; **follow-up email draft** from her notes; **answer rehearsal** where code checks every figure against her profile.
-- **Nudges:** confirm-first **email nudges** (brief ready, a refreshed brief with what is new before the meeting, follow-up and overdue reminders) with one-tap links that sign you in on your phone; **double-check list**, **listen mode**, **patterns across your notes**, **intro-message drafts**, **⌘K palette**.
+- **Nudges:** confirm-first **email nudges** (brief ready, a refreshed brief with what is new before the meeting, follow-up and overdue reminders) with one-tap links that sign you in on your phone; **double-check list**, **listen mode**, **patterns across your notes**, **intro-message drafts** (including a **forwardable blurb** so a mutual contact can introduce her in ten seconds), **⌘K palette**.
+- **Raise:** a **round tracker** (target, pre-money, commitments by stage, lead) showing progress, dilution, runway and warnings, with every assumption editable; weekly **Monday summary** and a gentle **bump** draft a week after a follow-up with no reply.
 - **Trust:** per-claim feedback, ops dashboard with cost per brief, in-product [Evidence page](https://pitchprep-three.vercel.app/evidence), real data deletion, injection / SSRF / rate-limit protections, accessibility, dark mode, installable on a phone.
 
 New here? Follow the [three-minute tour](docs/tour.md).

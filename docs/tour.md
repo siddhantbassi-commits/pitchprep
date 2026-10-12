@@ -1,4 +1,4 @@
-# Three-minute tour (plus a two-minute email walkthrough)
+# Three-minute tour (plus a two-minute email walkthrough and a founder-toolkit walkthrough)
 
 Live app: https://pitchprep-three.vercel.app. No login. Everything below is real: nothing is mocked and no data is hard-coded.
 
@@ -15,6 +15,9 @@ Live app: https://pitchprep-three.vercel.app. No login. Everything below is real
 | 8 | Type a made-up investor (for example *Zorblax Venmoor, Quantum Hearth Capital*) | The system refuses to invent a brief: "We could not verify this brief" |
 | 9 | Open **Dashboard** and **Evidence** (footer) | Live latency, cost per brief, what the gate dropped; the stored evaluation results and the independent spot-check |
 | 10 | Open **My startup** | Edit the founder profile (it feeds every talking point); **Delete all my data** really deletes |
+
+| 11 | Open **Discover** and click **Find investors** | A live progress screen, then investors who recently backed startups like Sattva Kitchen. Each deal shows its date, the exact quote and the source link; the footer says how many claimed deals the checks dropped |
+| 12 | Open **Raise** | The round form (target, pre-money, close-by), the investor table, a progress bar, dilution, runway and warnings. Try a number: everything updates instantly |
 
 Also try: **Listen** on a brief to hear it read aloud, the **Double-check before you say these** list near the top of a brief, **Find patterns in my notes** on the Pipeline page, **Draft an intro message** under a brief, press `⌘K` / `Ctrl+K` to jump anywhere, press `/` on Home to start typing, switch your device to dark mode, print or **Save as PDF** a brief, and resize to a phone width.
 
@@ -41,3 +44,15 @@ Where: **Meetings** page, under "Connect your calendar". Emails come from `pitch
 - Every email carries an unsubscribe link and the one-click `List-Unsubscribe` header.
 - Email links are signed, expire, and can only redirect within PitchPrep. Do not forward a nudge: the one-tap link signs in whoever opens it.
 - PitchPrep only drafts and researches. It never emails an investor on your behalf.
+
+## Founder toolkit walkthrough
+
+| # | Do this | What you should see |
+|---|---|---|
+| T1 | **Discover**, type a focus such as *women-led consumer brands*, click **Find investors** | A list ranked by code. Open a deal's source link to confirm the quote. A single deal is labelled "Worth a look", never "Strong match" |
+| T2 | On a result, leave **Who will you meet?** empty and click **Research this investor** | A message asking for the person's name (a brief is about one person). Add a name and it starts a full brief |
+| T3 | Open any brief and click **Start a mock meeting**, choose **Tough**, answer five questions (use a made-up figure such as 40% growth) | A simulated investor asks one question at a time, using only the brief's verified facts. After the last answer you get a /100 scorecard, a verbatim "strongest moment", the one thing to fix, and a flag on the figure that is not in your profile |
+| T4 | Open **Raise**, set a target and a pre-money, then add an investor with an amount and **Committed** | Progress bar, coverage, dilution, founder stake after the round, runway and plain warnings (for example "No lead investor identified yet") |
+| T5 | On **Raise** (or **My startup**) read **Pitch readiness** | Which numbers investors will ask for that your profile does not yet contain |
+| T6 | Under any brief open **Haven't met them yet?**, choose **Warm intro (forwardable)** and click **Draft message** | Two boxes: a short note to your mutual contact and a blurb they can forward unchanged. Figures and placeholders are checked |
+| T7 | **Meetings**, Email nudges: click **Preview** beside **Gentle bump** and **Monday summary** | Both emails exactly as they will arrive. The bump appears a week after a follow-up with no movement; the summary comes Monday mornings |

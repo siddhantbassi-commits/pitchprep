@@ -3,7 +3,7 @@
 import { writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 
-const W = 1280, H = 720;
+const W = 1280, H = 790;
 const X0 = 28, ACTOR_W = 150, COL_W = (W - 2 * X0 - ACTOR_W) / 6;
 const HEAD_Y = 54, HEAD_H = 34, ROW_H = 60, BOX_H = 47, BOX_W = COL_W - 22;
 const COLS = ['Trigger', 'Input', 'Context', 'Processing', 'AI', 'Output'];
@@ -20,6 +20,7 @@ const rows = [
   ['Database', 'Supabase', '#f3f6fc'],
   ['Delivery', 'Web · PDF · meeting card', '#f6f6f1'],
   ['After the meeting', 'Notes · follow-up · practice', '#fff6ee'],
+  ['Raise tools', 'Discover · Raise · Practice', '#f4f9f7'],
   ['Dashboard', 'Vercel', '#fdf2f4'],
 ];
 // [id, row, col, text]
@@ -38,16 +39,22 @@ const boxes = [
   ['g_out', 4, 'Output', 'Unverified claims dropped and listed as "left out and why"'],
   ['d_ctx', 5, 'Context', 'Briefs, claims, sources, cost and feedback; private per workspace'],
   ['d_proc', 5, 'Processing', 'Logs status, time, tokens and cost for every brief'],
-  ['v_proc', 6, 'Processing', 'Formats for reading, PDF, phone meeting card; sends nudges from a Gmail sender'],
-  ['v_out', 6, 'Output', 'Email nudge (confirmed address only): brief ready, refreshed brief before the meeting, follow-up reminder'],
+  ['v_proc', 6, 'Processing', 'Formats for reading, PDF, phone meeting card; sends nudges to her from a Gmail sender'],
+  ['v_out', 6, 'Output', 'Email to her (confirmed address only): brief ready, refreshed brief, follow-up, gentle bump, Monday summary'],
   ['f_trig', 7, 'Trigger', 'Meeting done: she adds notes, or practises an answer'],
   ['f_in', 7, 'Input', 'Her notes, and the answer she typed or dictated'],
   ['f_ctx', 7, 'Context', 'Her startup profile and the verified claims only'],
   ['f_proc', 7, 'Processing', 'Code checks every figure against her profile; flags placeholders'],
   ['f_ai', 7, 'AI', 'Drafts the follow-up; coaches the answer'],
   ['f_out', 7, 'Output', 'A draft she edits and sends herself; status and next step saved'],
-  ['k_proc', 8, 'Processing', 'Aggregates KPIs from Supabase'],
-  ['k_out', 8, 'Output', 'Live dashboard: time to brief, verification rate, cost per brief'],
+  ['r_trig', 8, 'Trigger', 'She asks "Who should I pitch?", opens her round, or starts a mock meeting'],
+  ['r_in', 8, 'Input', 'Her startup profile and an optional focus; amounts and stages investors tell her'],
+  ['r_ctx', 8, 'Context', 'Live search of recent rounds, peers and funds; her pipeline; a verified brief'],
+  ['r_proc', 8, 'Processing', 'Code verifies each deal (quote, date, firm), ranks by recency and fit, and does the round arithmetic'],
+  ['r_ai', 8, 'AI', 'Extracts investors and deals; plays the investor from verified facts only; scores her answers'],
+  ['r_out', 8, 'Output', 'Ranked investors with sources; round progress, dilution, runway; scorecard; Monday summary'],
+  ['k_proc', 9, 'Processing', 'Aggregates KPIs from Supabase'],
+  ['k_out', 9, 'Output', 'Live dashboard: time to brief, verification rate, cost per brief'],
 ];
 const pos = {};
 boxes.forEach(([id, r, c]) => {
@@ -78,6 +85,11 @@ const edges = [
   ['f_ctx', 'f_proc', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['f_proc', 'f_ai', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['f_ai', 'f_out', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
+  ['r_trig', 'r_in', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
+  ['r_in', 'r_ctx', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
+  ['r_ctx', 'r_proc', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
+  ['r_proc', 'r_ai', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
+  ['r_ai', 'r_out', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
   ['k_proc', 'k_out', (a, b) => [[a.x + a.w, cy(a)], [b.x, cy(b)]]],
 ];
 const path = (pts) => pts.map((p, i) => `${i ? 'L' : 'M'}${p[0].toFixed(1)},${p[1].toFixed(1)}`).join(' ');
@@ -104,7 +116,7 @@ body { margin: 0; width: ${W}px; height: ${H}px; position: relative; font-family
 svg { position: absolute; left: 0; top: 0 }
 </style></head><body>
 <div class="title">End Term · PitchPrep, Pre-Meeting Investor Brief: Components Map</div>
-<div class="sub">Name + firm in, a sourced and verified brief out, then notes, follow-up and practice. All AI is Gemini Flash. Code, not the model, decides what is shown.</div>
+<div class="sub">Name + firm in, a sourced and verified brief out; then notes, follow-up, practice, investor discovery and a round tracker. All AI is Gemini Flash. Code, not the model, decides what is shown.</div>
 <div class="h" style="left:${X0}px;width:${ACTOR_W}px;border-left:0;border-radius:12px 0 0 0">Actor</div>
 ${COLS.map((c, i) => `<div class="h" style="left:${X0 + ACTOR_W + i * COL_W}px;width:${COL_W}px;${i === 5 ? 'border-radius:0 12px 0 0' : ''}">${c}</div>`).join('\n')}
 ${rows.map((r, i) => `<div class="row" style="top:${HEAD_Y + HEAD_H + i * ROW_H}px;background:${r[2]}"></div><div class="actor" style="top:${HEAD_Y + HEAD_H + i * ROW_H}px"><b>${r[0]}</b><span>(${r[1]})</span></div>`).join('\n')}
@@ -112,7 +124,7 @@ ${COLS.map((_, i) => `<div class="vline" style="left:${X0 + ACTOR_W + i * COL_W}
 <svg width="${W}" height="${H}"><defs><marker id="ah" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M1,1 L8,4.5 L1,8" fill="none" stroke="#6b7280" stroke-width="1.4"/></marker></defs>
 ${svgEdges}</svg>
 ${boxes.map(([id, , c, t]) => { const p = pos[id]; const [bg, bd] = COLOR[c]; return `<div class="box" style="left:${p.x}px;top:${p.y}px;width:${p.w}px;height:${p.h}px;background:${bg};border-color:${bd}">${t}</div>`; }).join('\n')}
-<div class="bound"><b>HUMAN BOUNDARY</b><p>AI can research, cite, summarise and draft angles. It does not contact investors, send any email, state anything it cannot quote from a source, scrape LinkedIn, judge people or predict funding decisions.<br>Which angle to use, whether to take the meeting, and what to send afterwards, stays with Priya.</p></div>
+<div class="bound"><b>HUMAN BOUNDARY</b><p>AI can research, cite, summarise and draft angles. It does not contact investors, send anything on her behalf to anyone but herself, state anything it cannot quote from a source, scrape LinkedIn, judge people or predict funding decisions.<br>Which angle to use, whether to take the meeting, and what to send afterwards, stays with Priya.</p></div>
 <div class="foot">Built from MESA End Term Problem Statement 1 and the Case 03 component-map style reference</div>
 </body></html>`;
 writeFileSync('docs/Components-Map.html', html);

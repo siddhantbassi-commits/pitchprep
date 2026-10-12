@@ -1,7 +1,7 @@
 // Email content. Pure functions: data in, subject + text + HTML out. Fully testable and previewable without sending anything.
 // Every email says why it was sent, links to the right brief with a one-tap sign-in, and has an unsubscribe link.
 
-export type NudgeKind = 'confirm' | 'signin' | 'test' | 'brief_ready' | 'pre_meeting' | 'follow_up' | 'overdue' | 'digest';
+export type NudgeKind = 'confirm' | 'signin' | 'test' | 'brief_ready' | 'pre_meeting' | 'follow_up' | 'overdue' | 'digest' | 'bump' | 'weekly';
 
 export interface EmailData {
   kind: NudgeKind;
@@ -22,6 +22,8 @@ export interface EmailData {
   overdue?: { investor: string; nextStep: string; due: string }[];
   today?: { investor: string; firm: string; time: string; briefReady: boolean }[];
   followUpFor?: string;
+  bump?: { investor: string; firm: string; days: number; draft?: { subject: string; body: string } | null };
+  weekly?: { held: string[]; upcoming: string[]; pendingFollowUps: string[]; overdue: string[]; pipeline: string; raise?: string | null };
 }
 
 export interface Rendered { subject: string; text: string; html: string; preheader: string }
@@ -128,6 +130,39 @@ export function renderEmail(d: EmailData): Rendered {
       subject, preheader,
       text: `${hi}\n\n${tl('Overdue next steps', items)}Open your pipeline: ${d.openUrl}\n\nUnsubscribe: ${d.unsubscribeUrl}`,
       html: shell({ preheader, title: subject, bodyHtml: `<p style="font-size:15px;line-height:1.5;color:#15181e">${esc(hi)} these next steps in your investor pipeline have passed their date:</p>${ul(items)}`, ctaUrl: d.openUrl, ctaLabel: 'Open the pipeline', ...foot('You are getting this because next steps in your pipeline are overdue. At most one such email a day.') }),
+    };
+  }
+
+  if (d.kind === 'bump') {
+    const b = d.bump!;
+    const subject = `${b.investor} has not replied in ${b.days} days: a gentle bump`;
+    const preheader = 'A short, polite nudge you can send in a minute.';
+    const draftHtml = b.draft ? `${h('A draft you can edit and send')}<p style="font-size:14px;color:#5d6470;margin:0 0 6px">Subject: ${esc(b.draft.subject)}</p><div style="border-left:4px solid ${GREEN};padding:6px 14px;background:#faf8f3;font-size:15px;line-height:1.55;color:#15181e;white-space:pre-wrap">${esc(b.draft.body)}</div>` : '';
+    const draftText = b.draft ? `A DRAFT YOU CAN EDIT AND SEND
+Subject: ${b.draft.subject}
+
+${b.draft.body}
+
+` : '';
+    return {
+      subject, preheader,
+      text: `${hi}\n\nYou followed up with ${b.investor} (${b.firm}) ${b.days} days ago and nothing has moved since. Most investors need a second nudge; it is normal and welcome if it adds something.\n\n${draftText}Open the notes: ${d.openUrl}\n\nUnsubscribe: ${d.unsubscribeUrl}`,
+      html: shell({ preheader, title: `Time for a gentle bump to ${b.investor}`, bodyHtml: `<p style="font-size:15px;line-height:1.5;color:#15181e">${esc(hi)} you followed up with <strong>${esc(b.investor)}</strong> (${esc(b.firm)}) ${b.days} days ago and nothing has moved since. Most investors need a second nudge, and it is welcome when it adds something.</p>${draftHtml}${b.draft ? '<p style="font-size:13px;color:#5d6470">Written only from your notes and verified facts. Check it, change it, and send it yourself.</p>' : ''}`, ctaUrl: d.openUrl, ctaLabel: 'Open the notes', ...foot('You are getting this because a follow-up has had no movement for a week. At most one such email a day.') }),
+    };
+  }
+
+  if (d.kind === 'weekly') {
+    const w = d.weekly!;
+    const blocks: { t: string; items: string[] }[] = [
+      { t: 'Last 7 days: meetings held', items: w.held }, { t: 'Follow-ups still to send', items: w.pendingFollowUps }, { t: 'Overdue next steps', items: w.overdue }, { t: 'Next 7 days', items: w.upcoming },
+    ];
+    const subject = 'Your fundraising week';
+    const preheader = w.raise ?? w.pipeline;
+    const summary = [w.pipeline && `Pipeline: ${w.pipeline}`, w.raise && `The round: ${w.raise}`].filter(Boolean) as string[];
+    return {
+      subject, preheader,
+      text: `${hi}\n\nHere is your fundraising week.\n\n${tl('Where things stand', summary)}${blocks.map((b) => tl(b.t, b.items)).join('')}Open PitchPrep: ${d.openUrl}\n\nUnsubscribe: ${d.unsubscribeUrl}`,
+      html: shell({ preheader, title: subject, bodyHtml: `<p style="font-size:15px;line-height:1.5;color:#15181e">${esc(hi)} here is where things stand on Monday.</p>${summary.length ? h('Where things stand') + ul(summary) : ''}${blocks.filter((b) => b.items.length).map((b) => h(b.t) + ul(b.items)).join('')}`, ctaUrl: d.openUrl, ctaLabel: 'Open PitchPrep', ...foot('You are getting this because the weekly summary is on. One email, Monday mornings.') }),
     };
   }
 

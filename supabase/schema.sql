@@ -199,6 +199,71 @@ create table if not exists nudges_sent (
 alter table nudge_prefs enable row level security;
 alter table nudges_sent enable row level security;
 
+
+-- Raise cockpit: the round being raised and who has put in what.
+create table if not exists raise_plans (
+  workspace_id uuid primary key references workspaces(id) on delete cascade,
+  currency text not null default 'USD' check (currency in ('USD','INR')),
+  target numeric not null default 0,          -- base units (dollars or rupees)
+  pre_money numeric,
+  min_close numeric,
+  close_by date,
+  founder_pct numeric check (founder_pct is null or (founder_pct >= 0 and founder_pct <= 100)),
+  monthly_burn numeric,
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists raise_commitments (
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  investor_key text not null,
+  investor_name text not null,
+  firm text not null default '',
+  amount numeric not null default 0,
+  status text not null default 'interested' check (status in ('interested','soft_circled','committed','term_sheet','passed')),
+  is_lead boolean not null default false,
+  updated_at timestamptz not null default now(),
+  primary key (workspace_id, investor_key)
+);
+
+-- Investor discovery runs ("Who should I pitch?").
+create table if not exists discoveries (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  focus text,
+  status text not null default 'running' check (status in ('running','complete','failed')),
+  stages jsonb not null default '[]',
+  result jsonb,
+  error text,
+  cost_usd numeric(10,5),
+  latency_ms int,
+  created_at timestamptz not null default now(),
+  completed_at timestamptz
+);
+create index if not exists discoveries_ws_idx on discoveries (workspace_id, created_at desc);
+
+-- Mock investor meetings and how they scored, so progress over time is visible.
+create table if not exists mock_sessions (
+  id uuid primary key default gen_random_uuid(),
+  workspace_id uuid not null references workspaces(id) on delete cascade,
+  brief_id uuid references briefs(id) on delete set null,
+  investor_name text not null,
+  firm text not null,
+  difficulty text not null default 'fair',
+  turns jsonb not null default '[]',
+  score jsonb,
+  overall numeric,
+  created_at timestamptz not null default now()
+);
+create index if not exists mock_ws_idx on mock_sessions (workspace_id, created_at desc);
+
+alter table nudge_prefs add column if not exists bump boolean not null default true;
+alter table nudge_prefs add column if not exists weekly boolean not null default true;
+
+alter table raise_plans enable row level security;
+alter table raise_commitments enable row level security;
+alter table discoveries enable row level security;
+alter table mock_sessions enable row level security;
+
 alter table workspaces enable row level security;
 alter table founder_profiles enable row level security;
 alter table briefs enable row level security;
@@ -210,6 +275,6 @@ alter table rate_limits enable row level security;
 
 -- Explicit grants, scoped to PitchPrep's own tables only (this project is shared with other apps; their grants are not touched).
 grant usage on schema public to service_role;
-grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings, investor_notes, nudge_prefs, nudges_sent to service_role;
+grant all on table workspaces, founder_profiles, briefs, claims, evidence, feedback, events, rate_limits, calendar_feeds, meetings, investor_notes, nudge_prefs, nudges_sent, raise_plans, raise_commitments, discoveries, mock_sessions to service_role;
 grant all on sequence claims_id_seq, evidence_id_seq, feedback_id_seq, events_id_seq, nudges_sent_id_seq to service_role;
 grant execute on function bump_rate(text, timestamptz) to service_role;

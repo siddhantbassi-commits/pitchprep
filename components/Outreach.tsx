@@ -4,11 +4,11 @@ import { useState } from 'react';
 
 /** A first message to an investor the founder has not met yet, built from verified facts only. A draft: she edits and sends it herself. */
 export default function Outreach({ briefId, investor }: { briefId: string; investor: string }) {
-  const [channel, setChannel] = useState<'email' | 'linkedin'>('email');
+  const [channel, setChannel] = useState<'email' | 'linkedin' | 'forwardable'>('email');
   const [ask, setAsk] = useState('');
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState('');
-  const [draft, setDraft] = useState<{ subject: string; body: string; checks: string[] } | null>(null);
+  const [draft, setDraft] = useState<{ subject: string; body: string; checks: string[]; blurb?: string } | null>(null);
   const [copied, setCopied] = useState('');
 
   async function make() {
@@ -18,9 +18,9 @@ export default function Outreach({ briefId, investor }: { briefId: string; inves
     if (!r.ok) setErr(j.error ?? 'Something went wrong.'); else setDraft(j);
     setBusy(false);
   }
-  async function copy() {
+  async function copy(text?: string) {
     if (!draft) return;
-    try { await navigator.clipboard.writeText(channel === 'email' && draft.subject ? `Subject: ${draft.subject}\n\n${draft.body}` : draft.body); setCopied('Copied'); } catch { setCopied('Select the text and copy it manually'); }
+    try { await navigator.clipboard.writeText(text ?? (channel === 'email' && draft.subject ? `Subject: ${draft.subject}\n\n${draft.body}` : draft.body)); setCopied('Copied'); } catch { setCopied('Select the text and copy it manually'); }
     setTimeout(() => setCopied(''), 2500);
   }
 
@@ -29,23 +29,42 @@ export default function Outreach({ briefId, investor }: { briefId: string; inves
       <summary className="cursor-pointer text-lg font-semibold">Haven&apos;t met {investor} yet? Draft an intro message</summary>
       <p className="mt-2 text-sm text-muted">Built only from the verified facts above and your startup profile, with one accurate hook and one small ask. You edit it and send it yourself.</p>
       <fieldset className="mt-3 flex items-center gap-4 text-sm"><legend className="sr-only">Channel</legend>
-        {(['email', 'linkedin'] as const).map((c) => <label key={c} className="flex items-center gap-1.5"><input type="radio" name="ch" checked={channel === c} onChange={() => { setChannel(c); setDraft(null); }} />{c === 'email' ? 'Email' : 'LinkedIn note'}</label>)}
+        {(['email', 'linkedin', 'forwardable'] as const).map((c) => <label key={c} className="flex items-center gap-1.5"><input type="radio" name="ch" checked={channel === c} onChange={() => { setChannel(c); setDraft(null); }} />{c === 'email' ? 'Email' : c === 'linkedin' ? 'LinkedIn note' : 'Warm intro (forwardable)'}</label>)}
       </fieldset>
-      <label className="label mt-3 block" htmlFor="ask">Your ask (optional)</label>
-      <input id="ask" className="input mt-1" maxLength={300} placeholder="e.g. a 20-minute intro call next week; mention that Rohan Mehta suggested I write" value={ask} onChange={(e) => setAsk(e.target.value)} />
+      {channel === 'forwardable' && <p className="mt-2 text-sm text-muted">For when someone you know can introduce you. You get a short note to send them and a ready-to-forward blurb about you, so the introduction takes them ten seconds.</p>}
+      <label className="label mt-3 block" htmlFor="ask">{channel === 'forwardable' ? 'Who could introduce you? (optional)' : 'Your ask (optional)'}</label>
+      <input id="ask" className="input mt-1" maxLength={300} placeholder={channel === 'forwardable' ? 'e.g. Rohan Mehta, who advised us last year' : 'e.g. a 20-minute intro call next week; mention that Rohan Mehta suggested I write'} value={ask} onChange={(e) => setAsk(e.target.value)} />
       <button className="btn btn-primary mt-3" onClick={make} disabled={busy}>{busy ? 'Drafting…' : draft ? 'Redraft' : 'Draft message'}</button>
       {err && <p role="alert" className="mt-3 text-sm text-red">{err}</p>}
       {draft && (
         <div className="mt-4 border-t border-line pt-4">
           {draft.checks.length > 0 && <ul className="mb-3 rounded-lg bg-amber-soft p-3 text-sm text-amber space-y-1">{draft.checks.map((c, i) => <li key={i}>{c}</li>)}</ul>}
-          {channel === 'email' && (<><label className="label" htmlFor="osub">Subject</label><input id="osub" className="input mt-1" value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} /></>)}
-          <label className="label mt-3 block" htmlFor="obody">{channel === 'email' ? 'Email' : 'Connection note'}</label>
-          <textarea id="obody" className="input mt-1" rows={channel === 'email' ? 8 : 4} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
-          <div className="mt-3 flex flex-wrap items-center gap-3">
-            <button className="btn" onClick={copy}>Copy</button>
-            {channel === 'email' && <a className="btn" href={`mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}>Open in my email app</a>}
-            {copied && <span role="status" className="text-sm text-brand font-medium">{copied}</span>}
-          </div>
+          {channel === 'forwardable' ? (
+            <>
+              <label className="label" htmlFor="osub">Subject</label><input id="osub" className="input mt-1" value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} />
+              <label className="label mt-3 block" htmlFor="obody">1. Your note to the person who can introduce you</label>
+              <textarea id="obody" className="input mt-1" rows={6} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+              <button className="btn mt-2" onClick={() => copy(`Subject: ${draft.subject}\n\n${draft.body}`)}>Copy note</button>
+              <label className="label mt-4 block" htmlFor="oblurb">2. The blurb they can forward as it is</label>
+              <textarea id="oblurb" className="input mt-1" rows={8} value={draft.blurb ?? ''} onChange={(e) => setDraft({ ...draft, blurb: e.target.value })} />
+              <div className="mt-2 flex flex-wrap items-center gap-3">
+                <button className="btn" onClick={() => copy(draft.blurb ?? '')}>Copy blurb</button>
+                <a className="btn" href={`mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(`${draft.body}\n\n---\n${draft.blurb ?? ''}`)}`}>Open in my email app</a>
+                {copied && <span role="status" className="text-sm text-brand font-medium">{copied}</span>}
+              </div>
+            </>
+          ) : (
+            <>
+              {channel === 'email' && (<><label className="label" htmlFor="osub">Subject</label><input id="osub" className="input mt-1" value={draft.subject} onChange={(e) => setDraft({ ...draft, subject: e.target.value })} /></>)}
+              <label className="label mt-3 block" htmlFor="obody">{channel === 'email' ? 'Email' : 'Connection note'}</label>
+              <textarea id="obody" className="input mt-1" rows={channel === 'email' ? 8 : 4} value={draft.body} onChange={(e) => setDraft({ ...draft, body: e.target.value })} />
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button className="btn" onClick={() => copy()}>Copy</button>
+                {channel === 'email' && <a className="btn" href={`mailto:?subject=${encodeURIComponent(draft.subject)}&body=${encodeURIComponent(draft.body)}`}>Open in my email app</a>}
+                {copied && <span role="status" className="text-sm text-brand font-medium">{copied}</span>}
+              </div>
+            </>
+          )}
         </div>
       )}
     </details>
