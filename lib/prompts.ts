@@ -35,7 +35,8 @@ Rules:
 5. Sections: deals = investments, exits and milestones (kind investment, exit or milestone). An exit means a completed or announced acquisition, listing or share sale; an IPO filing or similar step is a milestone, not an exit; thesis = stated views (kind statement); context = retreats, pivots, controversies, portfolio trouble (kinds retreat, pivot, controversy, portfolio_trouble); firm = fund and firm facts (kinds fund, firm_fact).
 6. Only include deals that involve the named investor personally or their firm. Do not include personal-life information of any kind.
 7. identity.found is true only if the evidence shows the named person is associated with the named firm. If several people could match, say so in ambiguity.
-8. Be exhaustive within the evidence: up to 12 deals, 8 thesis, 8 context, 5 firm claims. Quality over quantity: skip anything you cannot quote.`;
+8. Do not add details that the quote does not contain: no round type (seed, Series A), amount, valuation, "led", "existing investor" or "first investment" unless those words or figures are in the quote itself. Fewer details, all supported, beats more details.
+9. Be exhaustive within the evidence: up to 12 deals, 8 thesis, 8 context, 5 firm claims. Quality over quantity: skip anything you cannot quote.`;
 
 export function extractPrompt(a: { name: string; firm: string; today: string; windowStart: string; evidence: Evidence[] }): string {
   const ev = a.evidence
@@ -44,8 +45,9 @@ export function extractPrompt(a: { name: string; firm: string; today: string; wi
   return `Investor: ${a.name} at ${a.firm}. Today is ${a.today}. "Recent" deals means ${a.windowStart} to ${a.today}.\n\n${ev}\n\nExtract the claims as JSON.`;
 }
 
-export const JUDGE_SYSTEM = `You are a strict fact-checker. For each item you get a claim and the quote it cites. Decide whether the quote alone supports every factual element of the claim (who, what, amount, round, date, attribution).
-supported = every element is in the quote. partial = the core is supported but some detail (amount, date, who led) is not in the quote. unsupported = the quote does not support the claim or says something different.
+export const JUDGE_SYSTEM = `You are a strict fact-checker. For each item you get a claim and the quote it cites. Decide whether the quote alone supports every factual element of the claim (who, what, amount, round type, date, attribution such as "led" or "existing investor").
+supported = every element is in the quote. partial = the core is supported but some detail (round type, amount, who led, "existing" or "new" investor, valuation) is not in the quote. unsupported = the quote does not support the claim or says something different.
+For partial, also return rewrite: one neutral sentence that states ONLY what the quote supports. Keep the names of the investor, firm and company; drop every detail the quote does not state. For supported or unsupported, rewrite is null.
 Return one verdict per id.`;
 
 export function synthesisSystem(): string {

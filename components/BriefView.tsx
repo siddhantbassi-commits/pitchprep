@@ -302,7 +302,7 @@ function ClaimRow({ c, ev, briefId, canReport, muted }: { c: Claim; ev: Map<stri
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className={`chip ${tone}`}>{KIND_LABEL[c.kind] ?? c.kind}</span>
         <span className="text-muted">{claimDate(c)}</span>
-        {c.judge === 'partial' && <span className="chip" title="The core is supported by the quote, but a detail such as an amount or date is not in it">partly confirmed</span>}
+        {c.judge === 'partial' && <span className="chip" title="The source supports the core fact but not every detail the model first wrote, so this wording was narrowed to what the source actually states">narrowed to the source</span>}
       </div>
       <p className="mt-1.5">{c.text}</p>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">

@@ -45,34 +45,39 @@ export async function syncCalendar(ws: string): Promise<{ meetings: MeetingRow[]
   const feed = (await db().from('calendar_feeds').select('*').eq('workspace_id', ws).maybeSingle()).data;
   if (!feed) return { meetings: [] };
   try {
-    const events = parseIcs(await fetchIcs(feed.ical_url));
-    const own = ownDomainsFrom(events);
-    const cands = upcoming(events).map((e) => ({ e, ext: externalAttendees(e, own) })).filter((x) => x.ext.length > 0);
-    const known = new Set(((await db().from('meetings').select('uid').eq('workspace_id', ws)).data ?? []).map((r) => r.uid as string));
-    const fresh = cands.filter((x) => !known.has(x.e.uid)).slice(0, 25);
-    if (fresh.length) {
-      const meter = new Meter();
-      const prompt = fresh.map((x) => `uid=${x.e.uid}\ntitle: ${x.e.title}\nstarts: ${x.e.startsAt}\nexternal attendees: ${x.ext.map((a) => `${a.name ?? '(no name)'} <@${a.email.split('@')[1]}>`).join('; ')}`).join('\n\n');
-      const res = await structured(Classified, SYSTEM, prompt, meter, 30_000).catch(() => ({ events: [] as z.infer<typeof Classified>['events'] }));
-      const by = new Map(res.events.map((c) => [c.uid, c]));
-      const rows = fresh.map(({ e, ext }) => {
-        const c = by.get(e.uid);
-        const names = ext.map((a) => (a.name ?? '').toLowerCase()).filter(Boolean);
-        const nameOk = c?.name && names.includes(c.name.trim().toLowerCase());
-        return {
-          workspace_id: ws, uid: e.uid, starts_at: e.startsAt, title: e.title, attendees: ext,
-          is_investor: !!c?.isInvestorMeeting, investor_name: nameOk ? c!.name : null, firm: c?.firm ?? null, confidence: c?.confidence ?? 'low',
-        };
-      });
-      must(await db().from('meetings').upsert(rows, { onConflict: 'workspace_id,uid', ignoreDuplicates: true }), 'save meetings');
-      await logEvent('calendar', 'classified', null, { n: rows.length, investors: rows.filter((r) => r.is_investor).length, cost: meter.u.costUsd });
-    }
-    await db().from('calendar_feeds').update({ last_synced_at: new Date().toISOString(), last_error: null }).eq('workspace_id', ws);
+    return await ingestIcs(ws, await fetchIcs(feed.ical_url));
   } catch (e) {
     const msg = String((e as Error).message ?? e).slice(0, 300);
     await db().from('calendar_feeds').update({ last_error: msg }).eq('workspace_id', ws);
     return { meetings: await listMeetings(ws), error: msg };
   }
+}
+
+/** Parses calendar text, classifies new external meetings and stores them. Separate from fetching so it can be tested directly. */
+export async function ingestIcs(ws: string, icsText: string): Promise<{ meetings: MeetingRow[] }> {
+  const events = parseIcs(icsText);
+  const own = ownDomainsFrom(events);
+  const cands = upcoming(events).map((e) => ({ e, ext: externalAttendees(e, own) })).filter((x) => x.ext.length > 0);
+  const known = new Set(((await db().from('meetings').select('uid').eq('workspace_id', ws)).data ?? []).map((r) => r.uid as string));
+  const fresh = cands.filter((x) => !known.has(x.e.uid)).slice(0, 25);
+  if (fresh.length) {
+    const meter = new Meter();
+    const prompt = fresh.map((x) => `uid=${x.e.uid}\ntitle: ${x.e.title}\nstarts: ${x.e.startsAt}\nexternal attendees: ${x.ext.map((a) => `${a.name ?? '(no name)'} <@${a.email.split('@')[1]}>`).join('; ')}`).join('\n\n');
+    const res = await structured(Classified, SYSTEM, prompt, meter, 30_000).catch(() => ({ events: [] as z.infer<typeof Classified>['events'] }));
+    const by = new Map(res.events.map((c) => [c.uid, c]));
+    const rows = fresh.map(({ e, ext }) => {
+      const c = by.get(e.uid);
+      const names = ext.map((a) => (a.name ?? '').toLowerCase()).filter(Boolean);
+      const nameOk = c?.name && names.includes(c.name.trim().toLowerCase());
+      return {
+        workspace_id: ws, uid: e.uid, starts_at: e.startsAt, title: e.title, attendees: ext,
+        is_investor: !!c?.isInvestorMeeting, investor_name: nameOk ? c!.name : null, firm: c?.firm ?? null, confidence: c?.confidence ?? 'low',
+      };
+    });
+    must(await db().from('meetings').upsert(rows, { onConflict: 'workspace_id,uid', ignoreDuplicates: true }), 'save meetings');
+    await logEvent('calendar', 'classified', null, { n: rows.length, investors: rows.filter((r) => r.is_investor).length, cost: meter.u.costUsd });
+  }
+  await db().from('calendar_feeds').update({ last_synced_at: new Date().toISOString(), last_error: null }).eq('workspace_id', ws);
   return { meetings: await listMeetings(ws) };
 }
 

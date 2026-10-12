@@ -31,7 +31,7 @@ const STAGE_DEFS: { key: string; label: string }[] = [
 ];
 
 const Judgement = z.object({
-  verdicts: z.array(z.object({ id: z.string(), verdict: z.enum(['supported', 'partial', 'unsupported']) })),
+  verdicts: z.array(z.object({ id: z.string(), verdict: z.enum(['supported', 'partial', 'unsupported']), rewrite: z.string().nullable() })),
 });
 
 export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<BriefResult> {
@@ -121,11 +121,18 @@ export async function runPipeline(input: RunInput, hooks: Hooks = {}): Promise<B
         meter,
         Math.min(20_000, left() - 8_000),
       );
-      const v = new Map(j.verdicts.map((x) => [x.id, x.verdict]));
+      const v = new Map(j.verdicts.map((x) => [x.id, x]));
       claims = claims.map((c) => {
         if (!c.verified) return c;
-        const verdict = v.get(c.id) ?? 'partial';
+        const j1 = v.get(c.id);
+        const verdict = j1?.verdict ?? 'partial';
         if (verdict === 'unsupported') return { ...c, verified: false, dropReason: 'judge_unsupported', judge: verdict };
+        // Partly supported: show only what the quote itself states, never the model's embellishment.
+        if (verdict === 'partial') {
+          const narrowed = j1?.rewrite?.trim();
+          if (!narrowed || narrowed.length < 15) return { ...c, verified: false, dropReason: 'judge_unsupported', judge: verdict };
+          return { ...c, text: narrowed.slice(0, 260), judge: verdict };
+        }
         return { ...c, judge: verdict };
       });
     } catch {
