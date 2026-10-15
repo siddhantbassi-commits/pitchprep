@@ -46,7 +46,7 @@ Or apply `supabase/schema.sql` yourself in the Supabase SQL editor.
 
 | Command | What it does |
 |---|---|
-| `npm test` | 124 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption, nudge scheduling incl. bump and weekly rules, signed links, email templates, investor discovery verification and ranking, mock-meeting scoring, raise arithmetic, pitch-readiness rules, deck consistency, contact matching, pre-mortem tracing, practice progress) |
+| `npm test` | 128 unit tests (verification gate, dates, quotes, SSRF guard, robots, tiers, delta, calendar parser, number checker, email layout, encryption, nudge scheduling incl. bump and weekly rules, signed links, email templates, investor discovery verification and ranking, mock-meeting scoring, raise arithmetic, pitch-readiness rules, deck consistency, contact matching, pre-mortem tracing, practice progress) |
 | `npm run seed` | Generate the example briefs shown on the home page (live data; a thin run is retried up to twice, unlike the evaluation, which is never filtered) |
 | `npm run cal-test -- file.ics` | Test investor-meeting detection on a calendar file |
 | `npm run discover -- "focus"` | Run investor discovery in the terminal and re-audit every deal against its source |
@@ -68,6 +68,7 @@ Not just a brief: the whole fundraising workflow around it.
 - **After:** investor **pipeline** ranked by fit with status, next step and notes; **follow-up email draft** from her notes; **answer rehearsal** where code checks every figure against her profile.
 - **Nudges:** confirm-first **email nudges** (brief ready, a refreshed brief with what is new before the meeting, follow-up and overdue reminders) with one-tap links that sign you in on your phone; **double-check list**, **listen mode**, **patterns across your notes**, **intro-message drafts** (including a **forwardable blurb** so a mutual contact can introduce her in ten seconds), **⌘K palette**.
 - **Raise:** a **deck check** that reads her pitch deck (PDF or pasted text) and flags every figure that conflicts with her profile or with another slide, plus the numbers investors ask for that the deck never states; a **round tracker** (target, pre-money, commitments by stage, lead) showing progress, dilution, runway and warnings, with every assumption editable; weekly **Monday summary** and a gentle **bump** draft a week after a follow-up with no reply.
+- **Look and feel:** original millet illustrations, and charts drawn from the numbers in the startup profile (revenue channels, run-rate growth, margins and repeat behaviour) plus a round-makeup donut on Raise; everything also works in dark mode and with reduced motion.
 - **Trust:** per-claim feedback, ops dashboard with cost per brief, in-product [Evidence page](https://pitchprep-three.vercel.app/evidence), real data deletion, injection / SSRF / rate-limit protections, accessibility, dark mode, installable on a phone.
 
 New here? Follow the [three-minute tour](docs/tour.md).

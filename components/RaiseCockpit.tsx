@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CSTATUSES, CSTATUS_LABEL, DEFAULT_PROB, UNIT, fmtMoney, fromBase, summarize, toBase, type Commitment, type Currency, type CStatus, type Plan } from '@/lib/raise';
 import { STATUS_LABEL, fitLabel, fitScore, type Fit, type Status } from '@/lib/tracker';
+import { Donut } from './charts';
 
 interface PipeRow { key: string; name: string; firm: string; stage: Status; fit: Fit | null; briefId: string }
 interface Row { key: string; name: string; firm: string; stage?: Status; fit?: Fit | null; briefId?: string; amount: string; status: CStatus; is_lead: boolean }
@@ -115,12 +116,17 @@ export default function RaiseCockpit({ initialPlan, initialCommitments, pipeline
               <div className="bg-blue" style={{ width: `${Math.min(barPct(s.soft), 100 - barPct(s.committed))}%` }} />
               <div className="bg-amber" style={{ width: `${Math.min(barPct(s.interested), Math.max(0, 100 - barPct(s.committed) - barPct(s.soft)))}%`, opacity: 0.55 }} />
             </div>
-            <dl className="mt-4 grid grid-cols-2 gap-4 sm:grid-cols-4 text-sm">
+            <div className="mt-4 flex flex-wrap items-center gap-6">
+            <Donut size={150} legend={false} colors={['var(--brand)', 'var(--blue)', 'var(--amber)', 'var(--line)']} ariaLabel={`Round makeup: committed ${money(s.committed)}, soft-circled ${money(s.soft)}, interested ${money(s.interested)}, still to find ${money(s.gap)}`}
+              slices={[{ label: 'Committed', value: s.committed }, { label: 'Soft-circled', value: s.soft }, { label: 'Interested', value: Math.min(s.interested, Math.max(0, s.target - s.committed - s.soft)) }, { label: 'Still to find', value: Math.max(0, s.target - s.committed - s.soft - s.interested) }]}
+              centre={{ big: `${s.pctCommitted}%`, small: 'committed' }} />
+            <dl className="grid min-w-0 grow grid-cols-2 gap-4 sm:grid-cols-4 text-sm">
               <div><dt className="text-muted"><span aria-hidden className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-brand" />Committed</dt><dd className="text-2xl font-serif font-semibold">{money(s.committed)}</dd><dd className="text-muted">{s.pctCommitted}% of target</dd></div>
               <div><dt className="text-muted"><span aria-hidden className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-blue" />Soft-circled</dt><dd className="text-2xl font-serif font-semibold">{money(s.soft)}</dd><dd className="text-muted">{s.pctCommittedSoft}% with committed</dd></div>
               <div><dt className="text-muted"><span aria-hidden className="mr-1 inline-block h-2.5 w-2.5 rounded-full bg-amber opacity-60" />Interested</dt><dd className="text-2xl font-serif font-semibold">{money(s.interested)}</dd><dd className="text-muted">Pipeline {s.coverage ?? 0}x target</dd></div>
               <div><dt className="text-muted">Still to find</dt><dd className="text-2xl font-serif font-semibold">{money(s.gap)}</dd><dd className="text-muted">{s.daysLeft == null ? 'No close-by date' : s.daysLeft >= 0 ? `${s.daysLeft} days left` : `${-s.daysLeft} days past`}</dd></div>
             </dl>
+            </div>
             <p className="mt-4 text-sm"><span className="font-medium">Expected raise on your assumed odds:</span> {money(s.expected)} <span className="text-muted">(committed {Math.round(odds.committed * 100)}%, soft-circled {Math.round(odds.soft_circled * 100)}%, interested {Math.round(odds.interested * 100)}%). An assumption, not a forecast.</span></p>
             <details className="mt-2 text-sm"><summary className="cursor-pointer text-muted">Change the assumed odds</summary>
               <div className="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-4">

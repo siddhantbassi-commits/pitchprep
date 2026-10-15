@@ -4,6 +4,7 @@ import Link from 'next/link';
 import './globals.css';
 import CommandPalette from '@/components/CommandPalette';
 import SearchButton from '@/components/SearchButton';
+import { GrainDivider } from '@/components/MilletArt';
 
 const fraunces = Fraunces({ subsets: ['latin'], variable: '--font-fraunces', display: 'swap' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter', display: 'swap' });
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </header>
         <CommandPalette />
         <main id="main" className="flex-1 mx-auto w-full max-w-5xl px-4 py-8">{children}</main>
+        <div className="no-print mx-auto w-full max-w-5xl px-4"><GrainDivider /></div>
         <footer className="no-print border-t border-line text-xs text-muted">
           <div className="mx-auto max-w-5xl px-4 py-6 flex flex-col sm:flex-row gap-2 justify-between">
             <p>Built from public, professional information only. Every claim is quoted from a source and checked before it is shown. AI by Gemini Flash.</p>

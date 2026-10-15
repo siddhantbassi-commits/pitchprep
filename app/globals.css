@@ -3,12 +3,14 @@
 :root {
   --bg: #faf8f3; --surface: #ffffff; --ink: #15181e; --muted: #5d6470; --line: #e6e1d6;
   --brand: #1f5f4a; --brand-ink: #ffffff; --brand-soft: #e4efe9;
+  --gold: #b07a0c; --gold-deep: #8a5d06; --gold-soft: #f3e2b8; --leaf: #2f7a5f;
   --amber: #8a5a0a; --amber-soft: #fbf1da; --red: #b42318; --red-soft: #fde8e6; --blue: #27528a; --blue-soft: #e6eef9;
 }
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #111418; --surface: #181c22; --ink: #eceae4; --muted: #9aa1ad; --line: #2a3039;
     --brand: #55bd96; --brand-ink: #0d1a14; --brand-soft: #17302a;
+    --gold: #e0b04f; --gold-deep: #c8962f; --gold-soft: #4a3a17; --leaf: #55bd96;
     --amber: #e2b04d; --amber-soft: #2b2412; --red: #f0877d; --red-soft: #2f1816; --blue: #8bb4ec; --blue-soft: #16233a;
   }
 }
@@ -17,6 +19,7 @@
   --color-brand: var(--brand); --color-brand-ink: var(--brand-ink); --color-brand-soft: var(--brand-soft);
   --color-amber: var(--amber); --color-amber-soft: var(--amber-soft); --color-red: var(--red); --color-red-soft: var(--red-soft);
   --color-blue: var(--blue); --color-blue-soft: var(--blue-soft);
+  --color-gold: var(--gold); --color-gold-soft: var(--gold-soft);
   --font-serif: var(--font-fraunces), Georgia, serif;
   --font-sans: var(--font-inter), system-ui, sans-serif;
 }
@@ -56,3 +59,16 @@ a { text-underline-offset: 3px; }
   main button:not(.btn) { padding: .5rem .35rem; }
   input[type='radio'], input[type='checkbox'] { width: 1.15rem; height: 1.15rem; }
 }
+
+/* Millet art and charts: gentle entrance, switched off for people who prefer less motion. */
+@keyframes grow-x { from { transform: scaleX(0) } }
+@keyframes grow-y { from { transform: scaleY(0) } }
+@keyframes sway { 0%, 100% { transform: rotate(-1.2deg) } 50% { transform: rotate(1.2deg) } }
+@keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-5px) } }
+.grow-x { transform-origin: left center; transform-box: fill-box; animation: grow-x .9s cubic-bezier(.2,.7,.2,1) both }
+.grow-y { transform-origin: center bottom; transform-box: fill-box; animation: grow-y .9s cubic-bezier(.2,.7,.2,1) both }
+.sway { transform-origin: 50% 100%; transform-box: fill-box; animation: sway 6s ease-in-out infinite }
+.float { animation: float 5s ease-in-out infinite }
+@media (prefers-reduced-motion: reduce) { .grow-x, .grow-y, .sway, .float { animation: none } }
+.hero-art { filter: drop-shadow(0 10px 24px color-mix(in srgb, var(--brand) 18%, transparent)) }
+@media print { .millet-art { display: none !important } }
